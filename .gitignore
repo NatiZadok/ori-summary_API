@@ -1,0 +1,23 @@
+# Secrets & local session
+config.json
+webtop_state.json
+webtop_state.b64.txt
+.webtop-chrome-profile/
+.webtop-manual-profile/
+.env
+*.pem
+empty_scrape_debug.png
+debug_*.png
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.log

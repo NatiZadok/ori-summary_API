@@ -1,0 +1,3503 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>סיכום אורי בית ספר</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Heebo:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --pink: #ff8fb8;
+      --pink-soft: #ffe4ef;
+      --peach: #ffb38a;
+      --mint: #7ed9c0;
+      --mint-soft: #e4faf3;
+      --sky: #7ec8f5;
+      --sky-soft: #e8f6ff;
+      --lavender: #c9b6ff;
+      --yellow: #ffe08a;
+      --ink: #3d2c4a;
+      --muted: #7a6a86;
+      --card: rgba(255, 255, 255, 0.88);
+      --shadow: 0 12px 40px rgba(255, 143, 184, 0.22);
+      --radius: 24px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Heebo", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 12% 18%, rgba(255, 224, 138, 0.55), transparent 32%),
+        radial-gradient(circle at 88% 12%, rgba(126, 200, 245, 0.45), transparent 28%),
+        radial-gradient(circle at 70% 80%, rgba(126, 217, 192, 0.4), transparent 35%),
+        radial-gradient(circle at 20% 85%, rgba(255, 143, 184, 0.35), transparent 30%),
+        linear-gradient(160deg, #fff7fb 0%, #f3fbff 45%, #fff5ec 100%);
+      overflow-x: hidden;
+    }
+
+    .sparkle {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        radial-gradient(circle, rgba(255,255,255,0.9) 1px, transparent 2px),
+        radial-gradient(circle, rgba(255,143,184,0.35) 1.5px, transparent 3px);
+      background-size: 80px 80px, 120px 120px;
+      background-position: 0 0, 40px 60px;
+      opacity: 0.35;
+      animation: drift 18s linear infinite;
+      z-index: 0;
+    }
+
+    @keyframes drift {
+      from { background-position: 0 0, 40px 60px; }
+      to { background-position: 80px 120px, 160px 180px; }
+    }
+
+    @keyframes floaty {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+
+    @keyframes popIn {
+      from { opacity: 0; transform: translateY(12px) scale(0.98); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .app {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      gap: 24px;
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 28px 20px 48px;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      position: sticky;
+      top: 24px;
+      align-self: start;
+      background: var(--card);
+      backdrop-filter: blur(12px);
+      border: 2px solid rgba(255, 143, 184, 0.35);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 22px 16px;
+      animation: popIn 0.5s ease both;
+    }
+
+    .logo {
+      text-align: center;
+      margin-bottom: 18px;
+    }
+
+    .logo .badge {
+      width: 72px;
+      height: 72px;
+      margin: 0 auto 10px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-size: 34px;
+      background: linear-gradient(145deg, #ffd1e3, #c9eaff);
+      box-shadow: 0 8px 20px rgba(255, 143, 184, 0.35);
+      animation: floaty 3.5s ease-in-out infinite;
+    }
+
+    .logo h2 {
+      margin: 0;
+      font-family: "Fredoka", sans-serif;
+      font-size: 1.15rem;
+      color: var(--ink);
+    }
+
+    .logo p {
+      margin: 4px 0 0;
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+
+    .nav-btn {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border: none;
+      background: transparent;
+      color: var(--ink);
+      font-family: inherit;
+      font-size: 1rem;
+      font-weight: 600;
+      padding: 14px 14px;
+      margin-bottom: 8px;
+      border-radius: 16px;
+      cursor: pointer;
+      transition: 0.2s ease;
+      text-align: right;
+    }
+
+    .nav-btn span.icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      font-size: 1.1rem;
+      background: var(--pink-soft);
+    }
+
+    .nav-btn[data-tab="daily"] span.icon { background: #f0eaff; }
+    .nav-btn[data-tab="homework"] span.icon { background: var(--mint-soft); }
+    .nav-btn[data-tab="schedule"] span.icon { background: #e8f6ff; }
+    .nav-btn[data-tab="holidays"] span.icon { background: #fff0d8; }
+    .nav-btn[data-tab="holidays-lani"] span.icon { background: #e4faf3; }
+    .nav-btn[data-tab="family-cal"] span.icon { background: #f0eaff; }
+    .nav-btn[data-tab="alerts"] span.icon { background: var(--sky-soft); }
+    .nav-btn[data-tab="messages"] span.icon { background: #ffe4ef; }
+
+    .day-picker-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .day-picker-row[hidden] {
+      display: none !important;
+    }
+
+    .day-picker-row label {
+      font-weight: 700;
+      font-family: "Fredoka", sans-serif;
+    }
+
+    .day-picker-row input[type="date"],
+    .day-picker-row input[type="month"] {
+      font-family: inherit;
+      font-size: 0.92rem;
+      font-weight: 500;
+      padding: 6px 4px;
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      outline: none;
+      min-width: 0;
+    }
+
+    .period-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+      margin-top: 14px;
+      margin-bottom: 12px;
+    }
+
+    .mode-select-row {
+      display: inline-flex;
+      flex-wrap: nowrap;
+      align-items: center;
+      gap: 8px;
+      margin: 0;
+    }
+
+    .mode-select-row label {
+      font-weight: 600;
+      font-family: "Heebo", sans-serif;
+      font-size: 0.9rem;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    #summary-mode {
+      font-family: inherit;
+      font-size: 0.92rem;
+      font-weight: 500;
+      padding: 8px 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(122, 106, 134, 0.18);
+      background: rgba(255, 255, 255, 0.92);
+      color: var(--muted);
+      cursor: pointer;
+      min-width: 110px;
+      box-shadow: 0 4px 14px rgba(61, 44, 74, 0.06);
+    }
+
+    .period-bar .day-picker-row {
+      margin: 0;
+      display: inline-flex;
+    }
+
+    .period-bar .day-picker-row[hidden] {
+      display: none !important;
+    }
+
+    .nav-arrows {
+      display: inline-flex;
+      align-items: center;
+      gap: 2px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.92);
+      border: 1px solid rgba(122, 106, 134, 0.16);
+      box-shadow: 0 4px 14px rgba(61, 44, 74, 0.06);
+    }
+
+    .nav-arrows button {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      font-size: 1rem;
+      font-weight: 500;
+      color: var(--muted);
+      line-height: 1;
+    }
+
+    .nav-arrows button:hover {
+      background: rgba(255, 228, 239, 0.7);
+      color: var(--ink);
+    }
+
+    .nav-arrows #week-label-btn,
+    .nav-arrows .period-label {
+      font-family: "Heebo", sans-serif;
+      font-size: 0.92rem;
+      font-weight: 500;
+      color: var(--muted);
+      padding: 0 8px;
+      white-space: nowrap;
+    }
+
+    .day-title {
+      font-family: "Fredoka", sans-serif;
+      font-size: 1.15rem;
+      margin: 0 0 12px;
+      color: var(--ink);
+    }
+
+    .day-empty {
+      text-align: center;
+      padding: 24px;
+      color: var(--muted);
+      font-weight: 600;
+      background: rgba(255,255,255,0.7);
+      border-radius: 16px;
+    }
+
+    .nav-btn:hover { background: rgba(255, 143, 184, 0.12); }
+    .nav-btn.active {
+      background: linear-gradient(120deg, #ffe4ef, #e8f6ff);
+      box-shadow: inset 0 0 0 2px rgba(255, 143, 184, 0.35);
+    }
+
+    .main { min-width: 0; animation: popIn 0.55s ease both; }
+
+    .hero {
+      background: linear-gradient(125deg, rgba(255,255,255,0.92), rgba(255,228,239,0.85) 45%, rgba(232,246,255,0.9));
+      border: 2px solid rgba(255, 143, 184, 0.3);
+      border-radius: 32px;
+      padding: 28px 30px;
+      box-shadow: var(--shadow);
+      margin-bottom: 22px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::after {
+      content: "✨";
+      position: absolute;
+      left: 24px;
+      top: 18px;
+      font-size: 2rem;
+      animation: floaty 2.8s ease-in-out infinite;
+    }
+
+    .hero h1 {
+      margin: 0;
+      font-family: "Fredoka", sans-serif;
+      font-size: clamp(1.8rem, 4vw, 2.6rem);
+      letter-spacing: 0.02em;
+      background: linear-gradient(90deg, #e85a9b, #5aa8e8, #42c1a1);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .dash-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .dash-tile {
+      background: rgba(255, 255, 255, 0.92);
+      border-radius: 20px;
+      padding: 14px 12px;
+      text-align: center;
+      border: 1px solid rgba(255, 143, 184, 0.2);
+      box-shadow: 0 6px 16px rgba(61, 44, 74, 0.06);
+      transition: transform 0.2s ease;
+      cursor: default;
+    }
+
+    .dash-tile:hover { transform: translateY(-3px); }
+
+    .dash-tile .emoji {
+      font-size: 1.35rem;
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+
+    .dash-tile .val {
+      font-family: "Fredoka", sans-serif;
+      font-size: 1.7rem;
+      font-weight: 700;
+      color: var(--ink);
+      line-height: 1.1;
+    }
+
+    .dash-tile .lbl {
+      margin-top: 4px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--muted);
+      line-height: 1.25;
+    }
+
+    .dash-tile.hw { background: linear-gradient(160deg, #fff, #e4faf3); }
+    .dash-tile.good { background: linear-gradient(160deg, #fff, #e8f6ff); }
+    .dash-tile.warn { background: linear-gradient(160deg, #fff, #ffe8df); }
+    .dash-tile.bell { background: linear-gradient(160deg, #fff, #ffe4ef); }
+    .dash-tile.mail { background: linear-gradient(160deg, #fff, #fff0d8); }
+    .dash-tile.sign { background: linear-gradient(160deg, #fff, #f0eaff); }
+
+    .dash-summary {
+      margin-top: 14px;
+      background: rgba(255, 255, 255, 0.75);
+      border-radius: 16px;
+      padding: 12px 16px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--ink);
+      line-height: 1.45;
+      border: 1px dashed rgba(255, 143, 184, 0.35);
+    }
+
+    .dash-summary span.hi {
+      color: #1f8f72;
+    }
+
+    .dash-summary span.lo {
+      color: #d15a3a;
+    }
+
+    .hero-title-block {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px 14px;
+      min-width: 0;
+      flex: 1;
+    }
+
+    .hero-update-block {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: white;
+      border-radius: 999px;
+      padding: 8px 14px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--muted);
+      box-shadow: 0 4px 14px rgba(61, 44, 74, 0.08);
+    }
+
+    .panel {
+      display: none;
+      animation: popIn 0.35s ease both;
+    }
+    .panel.active { display: block; }
+
+    .card {
+      background: var(--card);
+      backdrop-filter: blur(10px);
+      border: 2px solid rgba(255, 255, 255, 0.7);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 22px;
+      margin-bottom: 18px;
+    }
+
+    .card h2 {
+      margin: 0 0 6px;
+      font-family: "Fredoka", sans-serif;
+      font-size: 1.35rem;
+    }
+
+    .card .subtitle {
+      margin: 0 0 16px;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0 10px;
+    }
+
+    th {
+      text-align: right;
+      font-size: 0.85rem;
+      color: var(--muted);
+      padding: 0 14px 4px;
+      font-weight: 600;
+    }
+
+    td {
+      background: white;
+      padding: 14px 16px;
+      vertical-align: top;
+      border-top: 1px solid rgba(255, 143, 184, 0.12);
+      border-bottom: 1px solid rgba(255, 143, 184, 0.12);
+    }
+
+    tr td:first-child {
+      border-right: 1px solid rgba(255, 143, 184, 0.12);
+      border-radius: 0 16px 16px 0;
+    }
+
+    tr td:last-child {
+      border-left: 1px solid rgba(255, 143, 184, 0.12);
+      border-radius: 16px 0 0 16px;
+    }
+
+    .subject {
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .subject-pill {
+      display: inline-block;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: var(--pink-soft);
+      font-size: 0.92rem;
+    }
+
+    .subject-pill.math { background: #e8f6ff; }
+    .subject-pill.lang { background: #ffe4ef; }
+    .subject-pill.science { background: #e4faf3; }
+    .subject-pill.heritage { background: #fff0d8; }
+    .subject-pill.other { background: #f0eaff; }
+
+    .subject-count {
+      display: block;
+      margin-top: 8px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--muted);
+    }
+
+    .subject-count strong {
+      font-family: "Fredoka", sans-serif;
+      font-size: 1.15rem;
+      color: var(--ink);
+      margin-left: 2px;
+    }
+
+    ol.hw-list {
+      margin: 0;
+      padding-right: 0;
+      list-style: none;
+      line-height: 1.55;
+      counter-reset: hw;
+    }
+
+    ol.hw-list li {
+      margin-bottom: 8px;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      counter-increment: hw;
+    }
+
+    ol.hw-list li .hw-check {
+      width: 22px;
+      height: 22px;
+      margin-top: 2px;
+      flex-shrink: 0;
+      accent-color: #42c1a1;
+      cursor: pointer;
+      border-radius: 6px;
+    }
+
+    ol.hw-list li .hw-text {
+      flex: 1;
+      min-width: 0;
+    }
+
+    ol.hw-list li .hw-text::before {
+      content: counter(hw) ". ";
+      font-weight: 700;
+      color: var(--muted);
+    }
+
+    ol.hw-list li.done .hw-text {
+      text-decoration: line-through;
+      text-decoration-thickness: 2px;
+      color: #9a8aa6;
+      opacity: 0.75;
+    }
+
+    ol.hw-list li.done .hw-text::before {
+      color: #b7a8c0;
+    }
+
+    ol.hw-list li.done {
+      background: rgba(216, 248, 236, 0.45);
+      border-radius: 12px;
+      padding: 4px 8px;
+      margin-right: -8px;
+      margin-left: -8px;
+    }
+
+    .hw-date {
+      display: inline-block;
+      margin-left: 6px;
+      font-size: 0.82rem;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .hw-filter-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .hw-filter-row .hw-filter-label {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--muted);
+      margin-left: 4px;
+    }
+
+    .hw-filter-btn {
+      font-family: inherit;
+      font-size: 0.9rem;
+      font-weight: 600;
+      padding: 8px 16px;
+      border-radius: 999px;
+      border: 1px solid rgba(122, 106, 134, 0.18);
+      background: rgba(255, 255, 255, 0.9);
+      color: var(--muted);
+      cursor: pointer;
+      box-shadow: 0 3px 10px rgba(61, 44, 74, 0.05);
+    }
+
+    .hw-filter-btn:hover {
+      background: rgba(255, 228, 239, 0.65);
+      color: var(--ink);
+    }
+
+    .hw-filter-btn.active {
+      background: linear-gradient(135deg, #ffe4ef, #e8f7ff);
+      border-color: rgba(255, 143, 184, 0.45);
+      color: var(--ink);
+      box-shadow: 0 4px 14px rgba(255, 143, 184, 0.18);
+    }
+
+    .counters {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin-top: 8px;
+    }
+
+    .counter {
+      border-radius: 20px;
+      padding: 18px 16px;
+      text-align: center;
+      color: white;
+      box-shadow: 0 10px 24px rgba(61, 44, 74, 0.12);
+      transition: transform 0.2s ease;
+    }
+
+    .counter:hover { transform: translateY(-4px); }
+    .counter.good { background: linear-gradient(145deg, #7ed9c0, #42c1a1); }
+    .counter.warn { background: linear-gradient(145deg, #ffb38a, #ff8a6a); }
+    .counter.info { background: linear-gradient(145deg, #7ec8f5, #5aa8e8); }
+
+    .counter .num {
+      font-family: "Fredoka", sans-serif;
+      font-size: 2.2rem;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .counter .label {
+      margin-top: 6px;
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+
+    .events-table td.good-event { color: #1f8f72; font-weight: 700; }
+    .events-table td.bad-event { color: #d15a3a; font-weight: 700; }
+    .events-table td.special-event { color: #3d7ec4; font-weight: 700; }
+
+    .seen-cell {
+      text-align: center;
+      width: 110px;
+    }
+
+    .toggle-seen {
+      display: inline-flex;
+      gap: 6px;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .mark-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      border: 2px solid transparent;
+      cursor: pointer;
+      font-size: 1.15rem;
+      background: #f5f0f7;
+      transition: 0.15s ease;
+    }
+
+    .mark-btn.yes.active {
+      background: #d8f8ec;
+      border-color: #42c1a1;
+      box-shadow: 0 0 0 3px rgba(66, 193, 161, 0.2);
+    }
+
+    .mark-btn.no.active {
+      background: #ffe0e8;
+      border-color: #ff8fb8;
+      box-shadow: 0 0 0 3px rgba(255, 143, 184, 0.25);
+    }
+
+    .status-dot {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      margin-left: 6px;
+    }
+
+    .status-dot.unread { background: #ff8fb8; box-shadow: 0 0 0 4px rgba(255,143,184,0.25); }
+    .status-dot.read { background: #7ed9c0; }
+
+    .msg-card {
+      background: white;
+      border-radius: 18px;
+      padding: 16px 18px;
+      margin-bottom: 12px;
+      border: 1px solid rgba(255, 143, 184, 0.18);
+      box-shadow: 0 6px 18px rgba(61, 44, 74, 0.06);
+    }
+
+    .msg-card h3 {
+      margin: 0 0 6px;
+      font-size: 1.05rem;
+      font-family: "Fredoka", sans-serif;
+    }
+
+    .msg-card .from {
+      font-size: 0.88rem;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .msg-card .summary { line-height: 1.55; }
+
+    .sign-banner {
+      background: linear-gradient(120deg, #e4faf3, #e8f6ff);
+      border: 2px dashed #7ed9c0;
+      border-radius: 18px;
+      padding: 14px 16px;
+      margin-bottom: 16px;
+      font-weight: 600;
+    }
+
+    .sign-banner.action-needed {
+      background: linear-gradient(120deg, #fff0e8, #ffe4ef);
+      border-color: #ffb38a;
+    }
+
+    .sign-banner .action-title {
+      font-family: "Fredoka", sans-serif;
+      font-size: 1.1rem;
+      margin-bottom: 8px;
+    }
+
+    .sign-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 10px;
+      margin-left: 8px;
+      padding: 10px 16px;
+      border-radius: 999px;
+      border: none;
+      background: linear-gradient(120deg, #ff8fb8, #ffb38a);
+      color: white !important;
+      text-decoration: none;
+      font-family: inherit;
+      font-weight: 700;
+      font-size: 0.95rem;
+      box-shadow: 0 6px 16px rgba(255, 143, 184, 0.35);
+      cursor: pointer;
+    }
+
+    .sign-link.secondary {
+      background: linear-gradient(120deg, #7ec8f5, #7ed9c0);
+    }
+
+    .sign-item {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      background: white;
+      border-radius: 14px;
+      padding: 10px 12px;
+      margin-top: 8px;
+      border: 1px solid rgba(255, 143, 184, 0.18);
+    }
+
+    .sign-item .meta { font-size: 0.88rem; color: var(--muted); }
+
+    .empty-note {
+      color: var(--muted);
+      font-style: italic;
+    }
+
+    .footer-note {
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.85rem;
+      margin-top: 8px;
+    }
+
+    .hero-top {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 14px;
+    }
+
+    .hero-update-block .updated-chip {
+      margin: 0;
+    }
+
+    .update-btn {
+      border: none;
+      cursor: pointer;
+      font-family: "Fredoka", "Heebo", sans-serif;
+      font-weight: 600;
+      font-size: 1rem;
+      color: white;
+      padding: 12px 20px;
+      border-radius: 999px;
+      background: linear-gradient(120deg, #ff8fb8, #7ec8f5 55%, #7ed9c0);
+      box-shadow: 0 8px 22px rgba(255, 143, 184, 0.35);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .update-btn:hover {
+      transform: translateY(-2px) scale(1.02);
+      box-shadow: 0 12px 28px rgba(126, 200, 245, 0.4);
+    }
+
+    .update-btn:disabled {
+      opacity: 0.7;
+      cursor: wait;
+      transform: none;
+    }
+
+    .updated-chip {
+      font-size: 0.82rem;
+    }
+
+    .progress-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      background: rgba(61, 44, 74, 0.35);
+      backdrop-filter: blur(6px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .progress-overlay.open { display: flex; }
+
+    .progress-card {
+      width: min(520px, 100%);
+      background: linear-gradient(160deg, #fff, #ffe4ef 40%, #e8f6ff);
+      border-radius: 28px;
+      border: 2px solid rgba(255, 143, 184, 0.4);
+      box-shadow: 0 20px 50px rgba(61, 44, 74, 0.25);
+      padding: 24px 22px 20px;
+      animation: popIn 0.3s ease both;
+    }
+
+    .progress-card h3 {
+      margin: 0 0 6px;
+      font-family: "Fredoka", sans-serif;
+      font-size: 1.4rem;
+      text-align: center;
+    }
+
+    .progress-card .hint {
+      text-align: center;
+      color: var(--muted);
+      margin: 0 0 16px;
+      font-size: 0.92rem;
+    }
+
+    .steps { list-style: none; margin: 0; padding: 0; }
+
+    .steps li {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      background: white;
+      border-radius: 16px;
+      padding: 12px 14px;
+      margin-bottom: 8px;
+      border: 1px solid rgba(255, 143, 184, 0.15);
+      opacity: 0.45;
+      transition: 0.2s ease;
+    }
+
+    .steps li.active,
+    .steps li.done,
+    .steps li.error {
+      opacity: 1;
+    }
+
+    .steps li.active {
+      box-shadow: 0 0 0 2px rgba(126, 200, 245, 0.45);
+    }
+
+    .steps li.done {
+      box-shadow: 0 0 0 2px rgba(66, 193, 161, 0.35);
+    }
+
+    .steps li.error {
+      box-shadow: 0 0 0 2px rgba(255, 138, 106, 0.45);
+    }
+
+    .step-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+      font-weight: 700;
+      background: var(--pink-soft);
+    }
+
+    .steps li.active .step-icon {
+      background: linear-gradient(145deg, #7ec8f5, #ff8fb8);
+      color: white;
+      animation: floaty 1.2s ease-in-out infinite;
+    }
+
+    .steps li.done .step-icon { background: #d8f8ec; }
+    .steps li.error .step-icon { background: #ffe0e8; }
+
+    .step-body strong { display: block; font-size: 0.98rem; }
+    .step-body span { display: block; color: var(--muted); font-size: 0.85rem; margin-top: 2px; min-height: 1.1em; }
+
+    .progress-bar {
+      height: 10px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.7);
+      overflow: hidden;
+      margin: 14px 0 10px;
+    }
+
+    .progress-bar > i {
+      display: block;
+      height: 100%;
+      width: 0%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #ff8fb8, #7ec8f5, #7ed9c0);
+      transition: width 0.35s ease;
+    }
+
+    .progress-actions {
+      display: flex;
+      justify-content: center;
+      margin-top: 8px;
+    }
+
+    .progress-actions button {
+      border: none;
+      background: white;
+      color: var(--ink);
+      font-family: inherit;
+      font-weight: 700;
+      padding: 10px 18px;
+      border-radius: 999px;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(61, 44, 74, 0.1);
+    }
+
+    .schedule-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .schedule-toolbar .hint-edit {
+      font-size: 0.9rem;
+      color: var(--muted);
+      font-weight: 500;
+    }
+
+    .schedule-reset {
+      font-family: inherit;
+      font-size: 0.88rem;
+      font-weight: 600;
+      padding: 8px 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(122, 106, 134, 0.18);
+      background: rgba(255, 255, 255, 0.92);
+      color: var(--muted);
+      cursor: pointer;
+      box-shadow: 0 3px 10px rgba(61, 44, 74, 0.05);
+    }
+
+    .schedule-reset:hover {
+      background: rgba(255, 228, 239, 0.7);
+      color: var(--ink);
+    }
+
+    .schedule-wrap {
+      overflow-x: auto;
+      border-radius: 18px;
+      border: 1px solid rgba(122, 106, 134, 0.12);
+      background: rgba(255, 255, 255, 0.55);
+      box-shadow: 0 8px 24px rgba(61, 44, 74, 0.06);
+    }
+
+    table.schedule-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      min-width: 720px;
+      margin: 0;
+    }
+
+    table.schedule-table th,
+    table.schedule-table td {
+      border: none;
+      border-left: 1px solid rgba(122, 106, 134, 0.08);
+      border-bottom: 1px solid rgba(122, 106, 134, 0.08);
+      text-align: center;
+      vertical-align: middle;
+      padding: 0;
+    }
+
+    table.schedule-table th:last-child,
+    table.schedule-table td:last-child {
+      border-left: none;
+    }
+
+    table.schedule-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    table.schedule-table thead th {
+      background: linear-gradient(135deg, #8ec5f5, #a8b6ff 55%, #c9b6ff);
+      color: white;
+      font-family: "Fredoka", sans-serif;
+      font-weight: 600;
+      font-size: 0.95rem;
+      padding: 12px 8px;
+      text-shadow: 0 1px 0 rgba(61, 44, 74, 0.12);
+    }
+
+    table.schedule-table thead th:first-child {
+      border-radius: 0 17px 0 0;
+    }
+
+    table.schedule-table thead th:last-child {
+      border-radius: 17px 0 0 0;
+    }
+
+    table.schedule-table .hour-cell {
+      background: linear-gradient(180deg, #f7f0ff, #eef7ff);
+      font-family: "Fredoka", sans-serif;
+      font-weight: 600;
+      font-size: 0.88rem;
+      color: var(--muted);
+      padding: 10px 8px;
+      white-space: nowrap;
+      min-width: 72px;
+    }
+
+    table.schedule-table td.slot {
+      min-width: 100px;
+      background: rgba(255, 255, 255, 0.75);
+    }
+
+    table.schedule-table td.slot:focus-within {
+      background: #fff8fb;
+      box-shadow: inset 0 0 0 2px rgba(255, 143, 184, 0.45);
+    }
+
+    .schedule-input {
+      width: 100%;
+      border: none;
+      background: transparent;
+      font-family: inherit;
+      font-size: 0.92rem;
+      font-weight: 600;
+      color: var(--ink);
+      text-align: center;
+      padding: 12px 8px;
+      outline: none;
+      border-radius: 0;
+      min-height: 48px;
+    }
+
+    .schedule-input::placeholder {
+      color: #c4b6ce;
+      font-weight: 500;
+    }
+
+    .schedule-input.subj-math { background: rgba(255, 224, 138, 0.35); }
+    .schedule-input.subj-lang { background: rgba(255, 228, 239, 0.55); }
+    .schedule-input.subj-bible { background: rgba(255, 240, 216, 0.7); }
+    .schedule-input.subj-pe { background: rgba(228, 250, 243, 0.7); }
+    .schedule-input.subj-science { background: rgba(232, 246, 255, 0.75); }
+    .schedule-input.subj-art { background: rgba(240, 234, 255, 0.75); }
+    .schedule-input.subj-english { background: rgba(201, 182, 255, 0.28); }
+    .schedule-input.subj-music { background: rgba(126, 217, 192, 0.22); }
+    .schedule-input.subj-enrich { background: rgba(255, 179, 138, 0.22); }
+    .schedule-input.subj-life { background: rgba(126, 200, 245, 0.2); }
+    .schedule-input.subj-heritage { background: rgba(255, 240, 216, 0.55); }
+    .schedule-input.subj-extra { background: rgba(255, 143, 184, 0.12); }
+
+    .schedule-saved {
+      font-size: 0.85rem;
+      color: #1f8f72;
+      font-weight: 600;
+      opacity: 0;
+      transition: opacity 0.25s ease;
+    }
+
+    .schedule-saved.show { opacity: 1; }
+
+    .holidays-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .holiday-row {
+      display: grid;
+      grid-template-columns: 52px 1.2fr 0.9fr 1.1fr;
+      gap: 12px;
+      align-items: center;
+      padding: 14px 16px;
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.85);
+      border: 1px solid rgba(122, 106, 134, 0.1);
+      box-shadow: 0 6px 18px rgba(61, 44, 74, 0.05);
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .holiday-row:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 22px rgba(255, 143, 184, 0.14);
+    }
+
+    .holiday-row.kind-vacation {
+      background: linear-gradient(120deg, rgba(255, 228, 239, 0.55), rgba(255, 255, 255, 0.9));
+    }
+
+    .holiday-row.kind-camp {
+      background: linear-gradient(120deg, rgba(232, 246, 255, 0.7), rgba(255, 255, 255, 0.9));
+    }
+
+    .holiday-row.kind-off {
+      background: linear-gradient(120deg, rgba(255, 240, 216, 0.65), rgba(255, 255, 255, 0.9));
+    }
+
+    .holiday-row.kind-activity {
+      background: linear-gradient(120deg, rgba(228, 250, 243, 0.75), rgba(255, 255, 255, 0.9));
+    }
+
+    .holiday-row.kind-summer {
+      background: linear-gradient(120deg, rgba(255, 224, 138, 0.4), rgba(255, 255, 255, 0.9));
+    }
+
+    .holiday-back {
+      font-size: 0.82rem;
+      color: #1f8f72;
+      font-weight: 600;
+      margin-top: 4px;
+    }
+
+    .cal-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .cal-nav {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.92);
+      border: 1px solid rgba(122, 106, 134, 0.16);
+      box-shadow: 0 4px 14px rgba(61, 44, 74, 0.06);
+    }
+
+    .cal-nav button {
+      width: 36px;
+      height: 36px;
+      border: none;
+      border-radius: 50%;
+      background: transparent;
+      cursor: pointer;
+      font-size: 1.05rem;
+      color: var(--muted);
+    }
+
+    .cal-nav button:hover {
+      background: rgba(255, 228, 239, 0.7);
+      color: var(--ink);
+    }
+
+    .cal-month-label {
+      font-family: "Fredoka", sans-serif;
+      font-weight: 600;
+      font-size: 1.15rem;
+      color: var(--ink);
+      min-width: 140px;
+      text-align: center;
+    }
+
+    .cal-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .cal-legend span {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--muted);
+      background: rgba(255, 255, 255, 0.85);
+      border: 1px solid rgba(122, 106, 134, 0.12);
+    }
+
+    .cal-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .cal-dot.ori { background: #ff8fb8; }
+    .cal-dot.lani { background: #7ed9c0; }
+    .cal-dot.camp { background: #7ec8f5; }
+    .cal-dot.yela { background: #42c1a1; box-shadow: 0 0 0 2px rgba(66, 193, 161, 0.35); }
+    .cal-dot.both { background: linear-gradient(135deg, #ff8fb8, #7ed9c0); box-shadow: 0 0 0 2px #ffe08a; }
+
+    .cal-both-alert {
+      display: none;
+      margin-bottom: 14px;
+      padding: 12px 16px;
+      border-radius: 16px;
+      background: linear-gradient(120deg, #fff3cd, #ffe4ef);
+      border: 1.5px solid rgba(255, 176, 32, 0.55);
+      color: var(--ink);
+      font-weight: 600;
+      font-size: 0.95rem;
+      line-height: 1.45;
+    }
+
+    .cal-both-alert.show { display: block; }
+
+    .cal-both-alert .alert-icon { margin-left: 6px; }
+
+    .cal-grid-wrap {
+      overflow-x: auto;
+      border-radius: 18px;
+      border: 1px solid rgba(122, 106, 134, 0.12);
+      background: rgba(255, 255, 255, 0.65);
+      box-shadow: 0 8px 24px rgba(61, 44, 74, 0.06);
+    }
+
+    .cal-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      min-width: 560px;
+    }
+
+    .cal-dow {
+      text-align: center;
+      font-family: "Fredoka", sans-serif;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: white;
+      padding: 10px 4px;
+      background: linear-gradient(135deg, #8ec5f5, #a8b6ff 55%, #c9b6ff);
+    }
+
+    .cal-dow:first-child { border-radius: 0 17px 0 0; }
+    .cal-dow:last-child { border-radius: 17px 0 0 0; }
+
+    .cal-cell {
+      min-height: 84px;
+      padding: 8px;
+      border-top: 1px solid rgba(122, 106, 134, 0.08);
+      border-left: 1px solid rgba(122, 106, 134, 0.08);
+      background: rgba(255, 255, 255, 0.75);
+      position: relative;
+    }
+
+    .cal-cell.out {
+      background: rgba(247, 240, 255, 0.35);
+      opacity: 0.45;
+    }
+
+    .cal-cell.today {
+      box-shadow: inset 0 0 0 2px rgba(126, 200, 245, 0.65);
+    }
+
+    .cal-cell.has-ori {
+      background: linear-gradient(160deg, rgba(255, 228, 239, 0.7), rgba(255, 255, 255, 0.9));
+    }
+
+    .cal-cell.has-lani {
+      background: linear-gradient(160deg, rgba(228, 250, 243, 0.75), rgba(255, 255, 255, 0.9));
+    }
+
+    .cal-cell.has-camp {
+      background: linear-gradient(160deg, rgba(232, 246, 255, 0.85), rgba(255, 255, 255, 0.9));
+    }
+
+    .cal-cell.has-yela {
+      background: linear-gradient(160deg, rgba(66, 193, 161, 0.22), rgba(232, 246, 255, 0.55), rgba(255, 255, 255, 0.92));
+      box-shadow: inset 0 0 0 1.5px rgba(66, 193, 161, 0.45);
+    }
+
+    .cal-cell.has-both {
+      background: linear-gradient(145deg, #ffe08a 0%, #ffe4ef 45%, #e4faf3 100%);
+      box-shadow: inset 0 0 0 2px rgba(255, 176, 32, 0.7);
+      animation: calPulse 2.2s ease-in-out infinite;
+    }
+
+    @keyframes calPulse {
+      0%, 100% { filter: brightness(1); }
+      50% { filter: brightness(1.04); }
+    }
+
+    .cal-daynum {
+      font-family: "Fredoka", sans-serif;
+      font-weight: 600;
+      font-size: 0.95rem;
+      color: var(--ink);
+    }
+
+    .cal-marks {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-top: 8px;
+    }
+
+    .cal-tag {
+      font-size: 0.68rem;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 999px;
+      line-height: 1.3;
+    }
+
+    .cal-tag.ori {
+      background: rgba(255, 143, 184, 0.35);
+      color: #9b3d6a;
+    }
+
+    .cal-tag.lani {
+      background: rgba(126, 217, 192, 0.4);
+      color: #1f8f72;
+    }
+
+    .cal-tag.camp {
+      background: rgba(126, 200, 245, 0.45);
+      color: #2a6fa0;
+    }
+
+    .cal-tag.yela {
+      background: linear-gradient(120deg, #42c1a1, #7ec8f5);
+      color: white;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      box-shadow: 0 2px 8px rgba(66, 193, 161, 0.35);
+      padding: 3px 8px;
+      font-size: 0.72rem;
+    }
+
+    .cal-tag.both {
+      background: #ffb020;
+      color: #3d2c4a;
+    }
+
+    .cal-cell-tip {
+      font-size: 0.7rem;
+      color: var(--muted);
+      margin-top: 4px;
+      line-height: 1.25;
+    }
+
+    .cal-both-list {
+      margin: 8px 0 0;
+      padding: 0;
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .cal-both-list li {
+      font-size: 0.88rem;
+      font-weight: 500;
+      color: var(--muted);
+    }
+
+    .cal-both-list li strong { color: var(--ink); }
+
+    .cal-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .cal-action-btn {
+      font-family: inherit;
+      font-size: 0.92rem;
+      font-weight: 700;
+      padding: 10px 16px;
+      border-radius: 999px;
+      border: 1px solid rgba(122, 106, 134, 0.16);
+      background: rgba(255, 255, 255, 0.95);
+      color: var(--ink);
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(61, 44, 74, 0.06);
+    }
+
+    .cal-action-btn.primary {
+      border: none;
+      color: white;
+      background: linear-gradient(120deg, #ff8fb8, #7ec8f5 55%, #7ed9c0);
+      box-shadow: 0 8px 20px rgba(255, 143, 184, 0.28);
+    }
+
+    .cal-action-btn:hover { transform: translateY(-1px); }
+
+    .cal-add-form {
+      display: grid;
+      grid-template-columns: 1.4fr 0.9fr 0.9fr 0.9fr auto;
+      gap: 10px;
+      align-items: end;
+      margin-bottom: 16px;
+      padding: 14px;
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.75);
+      border: 1px solid rgba(122, 106, 134, 0.12);
+    }
+
+    .cal-add-form label {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--muted);
+    }
+
+    .cal-add-form input,
+    .cal-add-form select {
+      font-family: inherit;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--ink);
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(122, 106, 134, 0.18);
+      background: white;
+    }
+
+    .cal-add-form .cal-add-submit {
+      height: 42px;
+      align-self: end;
+    }
+
+    .cal-custom-list {
+      margin-top: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .cal-custom-item {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 10px 14px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.85);
+      border: 1px solid rgba(122, 106, 134, 0.1);
+    }
+
+    .cal-custom-item .meta {
+      font-size: 0.85rem;
+      color: var(--muted);
+      font-weight: 500;
+    }
+
+    .cal-custom-item button {
+      border: none;
+      background: rgba(255, 228, 239, 0.8);
+      color: #9b3d6a;
+      font-family: inherit;
+      font-weight: 700;
+      font-size: 0.82rem;
+      padding: 6px 12px;
+      border-radius: 999px;
+      cursor: pointer;
+    }
+
+    .cal-tag.custom {
+      background: rgba(201, 182, 255, 0.45);
+      color: #5a3d8a;
+    }
+
+    .cal-cell.has-custom {
+      box-shadow: inset 0 0 0 1.5px rgba(201, 182, 255, 0.55);
+    }
+
+    .cal-dot.custom { background: #c9b6ff; }
+
+    .cal-export-hint {
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin: 0 0 12px;
+      line-height: 1.4;
+    }
+
+    @media (max-width: 900px) {
+      .cal-add-form {
+        grid-template-columns: 1fr 1fr;
+      }
+      .cal-add-form .cal-add-submit {
+        grid-column: 1 / -1;
+      }
+    }
+
+    .holiday-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      font-size: 1.35rem;
+      background: white;
+      box-shadow: 0 4px 12px rgba(61, 44, 74, 0.08);
+    }
+
+    .holiday-name {
+      font-family: "Fredoka", sans-serif;
+      font-weight: 600;
+      font-size: 1.02rem;
+      color: var(--ink);
+    }
+
+    .holiday-date {
+      font-weight: 700;
+      color: #5a7fb8;
+      font-size: 0.95rem;
+      white-space: nowrap;
+    }
+
+    .holiday-note {
+      font-size: 0.9rem;
+      color: var(--muted);
+      font-weight: 500;
+      line-height: 1.35;
+    }
+
+    .holiday-note strong {
+      color: var(--ink);
+      font-weight: 700;
+    }
+
+    .holidays-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .holidays-legend span {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--muted);
+      background: rgba(255, 255, 255, 0.8);
+      border: 1px solid rgba(122, 106, 134, 0.12);
+    }
+
+    @media (max-width: 900px) {
+      .holiday-row {
+        grid-template-columns: 44px 1fr;
+        grid-template-areas:
+          "icon name"
+          "icon date"
+          "note note";
+      }
+      .holiday-icon { grid-area: icon; }
+      .holiday-name { grid-area: name; }
+      .holiday-date { grid-area: date; }
+      .holiday-note { grid-area: note; }
+    }
+
+    @media (max-width: 900px) {
+      .app {
+        grid-template-columns: 1fr;
+        padding: 16px;
+      }
+      .sidebar { position: static; }
+      .counters { grid-template-columns: 1fr; }
+      .hero::after { display: none; }
+      .dash-grid { grid-template-columns: repeat(2, 1fr); }
+      table { display: block; overflow-x: auto; }
+      table.schedule-table { display: table; }
+    }
+
+    @media (max-width: 1100px) and (min-width: 901px) {
+      .dash-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+  </style>
+</head>
+<body>
+  <div class="sparkle" aria-hidden="true"></div>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="logo">
+        <div class="badge">❤️</div>
+        <h2>אורי</h2>
+        <p>כיתה ב׳ 2</p>
+      </div>
+      <nav>
+        <button class="nav-btn active" data-tab="daily" type="button">
+          <span class="icon">📅</span>
+          סיכום
+        </button>
+        <button class="nav-btn" data-tab="homework" type="button">
+          <span class="icon">📚</span>
+          שיעורי בית
+        </button>
+        <button class="nav-btn" data-tab="schedule" type="button">
+          <span class="icon">🗓️</span>
+          מערכת שעות
+        </button>
+        <button class="nav-btn" data-tab="holidays" type="button">
+          <span class="icon">🏖️</span>
+          חופשי אורי
+        </button>
+        <button class="nav-btn" data-tab="holidays-lani" type="button">
+          <span class="icon">🧒</span>
+          חופשות לני
+        </button>
+        <button class="nav-btn" data-tab="family-cal" type="button">
+          <span class="icon">📆</span>
+          לוח משפחתי
+        </button>
+        <button class="nav-btn" data-tab="alerts" type="button">
+          <span class="icon">🔔</span>
+          התראות
+        </button>
+        <button class="nav-btn" data-tab="messages" type="button">
+          <span class="icon">💌</span>
+          הודעות
+        </button>
+      </nav>
+    </aside>
+
+    <main class="main">
+      <header class="hero">
+        <div class="hero-top">
+          <div class="hero-title-block">
+            <h1>סיכום אורי בית ספר</h1>
+            <span class="chip" id="chip-school">🏫 ב׳ זיו בו ציון</span>
+          </div>
+          <div class="hero-update-block">
+            <button type="button" class="update-btn" id="update-btn">🔄 עדכן עכשיו</button>
+            <span class="chip updated-chip" id="chip-updated">⏱️ טרם עודכן מהשרת</span>
+          </div>
+        </div>
+        <div class="period-bar">
+          <div class="mode-select-row">
+            <label for="summary-mode">תקופה</label>
+            <select id="summary-mode">
+              <option value="daily">יומי</option>
+              <option value="weekly" selected>שבועי</option>
+              <option value="monthly">חודשי</option>
+            </select>
+          </div>
+          <div class="day-picker-row" id="picker-daily" hidden>
+            <div class="nav-arrows">
+              <button type="button" id="day-prev" title="יום קודם">→</button>
+              <input type="date" id="day-date" />
+              <button type="button" id="day-next" title="יום הבא">←</button>
+            </div>
+          </div>
+          <div class="day-picker-row" id="picker-weekly" hidden>
+            <div class="nav-arrows">
+              <button type="button" id="week-prev" title="שבוע קודם">→</button>
+              <span id="week-label-btn" class="period-label">📅 שבוע</span>
+              <button type="button" id="week-next" title="שבוע הבא">←</button>
+            </div>
+          </div>
+          <div class="day-picker-row" id="picker-monthly" hidden>
+            <div class="nav-arrows">
+              <button type="button" id="month-prev" title="חודש קודם">→</button>
+              <input type="month" id="month-date" />
+              <button type="button" id="month-next" title="חודש הבא">←</button>
+            </div>
+          </div>
+        </div>
+        <div class="dash-grid" id="dash-grid">
+          <div class="dash-tile hw">
+            <div class="emoji">📚</div>
+            <div class="val" id="dash-hw">18</div>
+            <div class="lbl">שיעורי בית</div>
+          </div>
+          <div class="dash-tile good">
+            <div class="emoji">🌟</div>
+            <div class="val" id="dash-good">14</div>
+            <div class="lbl">מילים טובות</div>
+          </div>
+          <div class="dash-tile warn">
+            <div class="emoji">⚠️</div>
+            <div class="val" id="dash-bad">5</div>
+            <div class="lbl">הפרעות</div>
+          </div>
+          <div class="dash-tile bell">
+            <div class="emoji">🔔</div>
+            <div class="val" id="dash-alerts">28</div>
+            <div class="lbl">התראות שלא נקראו</div>
+          </div>
+          <div class="dash-tile mail">
+            <div class="emoji">💌</div>
+            <div class="val" id="dash-msgs">3</div>
+            <div class="lbl">הודעות</div>
+          </div>
+          <div class="dash-tile sign">
+            <div class="emoji">✍️</div>
+            <div class="val" id="dash-signs">0</div>
+            <div class="lbl">חתימות ממתינות</div>
+          </div>
+        </div>
+        <div class="dash-summary" id="dash-summary">
+          במבט על: 18 שיעורי בית · 28 התראות שלא נקראו · אין חתימות ממתינות
+        </div>
+      </header>
+
+      <!-- סיכום -->
+      <section id="panel-daily" class="panel active">
+        <div class="card">
+          <h2>📅 פירוט סיכום</h2>
+          <p class="subtitle">לפי התקופה שנבחרה למעלה</p>
+          <h3 class="day-title" id="day-heading">—</h3>
+          <div class="counters" style="margin-bottom: 18px;">
+            <div class="counter good">
+              <div class="num" id="day-hw-n">0</div>
+              <div class="label">נותרו לעשות</div>
+            </div>
+            <div class="counter info">
+              <div class="num" id="day-ev-n">0</div>
+              <div class="label">אירועי שיעור</div>
+            </div>
+            <div class="counter warn">
+              <div class="num" id="day-al-n">0</div>
+              <div class="label">התראות</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2 id="day-hw-title">📚 שיעורי בית</h2>
+          <div id="day-hw"></div>
+        </div>
+
+        <div class="card">
+          <h2 id="day-ev-title">🎯 אירועי שיעור</h2>
+          <div id="day-events"></div>
+        </div>
+
+        <div class="card">
+          <h2 id="day-al-title">🔔 התראות</h2>
+          <div id="day-alerts"></div>
+        </div>
+
+        <div class="card">
+          <h2 id="day-msg-title">💌 הודעות</h2>
+          <div id="day-messages"></div>
+        </div>
+      </section>
+
+      <!-- שיעורי בית -->
+      <section id="panel-homework" class="panel">
+        <div class="card">
+          <h2>📚 שיעורי בית לפי מקצוע</h2>
+          <p class="subtitle">כל שיעורי הבית מכל הזמנים — סמני ✓ כשבוצע, וסנני לפי סטטוס</p>
+          <div class="counters" style="margin-bottom: 18px;">
+            <div class="counter good">
+              <div class="num" id="hw-remaining">18</div>
+              <div class="label">נותרו לעשות</div>
+            </div>
+            <div class="counter info">
+              <div class="num" id="hw-subjects">4</div>
+              <div class="label">מקצועות</div>
+            </div>
+            <div class="counter warn">
+              <div class="num" id="hw-done-count">0</div>
+              <div class="label">בוצעו ✓</div>
+            </div>
+          </div>
+          <div class="hw-filter-row" role="group" aria-label="סינון שיעורי בית">
+            <span class="hw-filter-label">הצגה:</span>
+            <button type="button" class="hw-filter-btn active" data-hw-filter="open">לא נעשו</button>
+            <button type="button" class="hw-filter-btn" data-hw-filter="done">נעשו</button>
+            <button type="button" class="hw-filter-btn" data-hw-filter="all">הכל</button>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>מקצוע</th>
+                <th>שיעורי בית</th>
+              </tr>
+            </thead>
+            <tbody id="hw-body"></tbody>
+          </table>
+          <p class="footer-note" id="hw-footer">⭐ סמני שיעורי בית שבוצעו בריבוע משמאל</p>
+        </div>
+      </section>
+
+      <!-- מערכת שעות -->
+      <section id="panel-schedule" class="panel">
+        <div class="card">
+          <h2>🗓️ מערכת השעות של כיתה ב׳ 2</h2>
+          <p class="subtitle">לחצי על כל תא כדי לערוך מקצוע · השינויים נשמרים אוטומטית</p>
+          <div class="schedule-toolbar">
+            <span class="hint-edit">✏️ עריכה חופשית לכל שעה ויום</span>
+            <span class="schedule-saved" id="schedule-saved">נשמר ✓</span>
+            <button type="button" class="schedule-reset" id="schedule-reset">איפוס למערכת המקורית</button>
+          </div>
+          <div class="schedule-wrap">
+            <table class="schedule-table" id="schedule-table">
+              <thead>
+                <tr>
+                  <th>שעה / יום</th>
+                  <th>ראשון</th>
+                  <th>שני</th>
+                  <th>שלישי</th>
+                  <th>רביעי</th>
+                  <th>חמישי</th>
+                  <th>שישי</th>
+                </tr>
+              </thead>
+              <tbody id="schedule-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- חופשי אורי -->
+      <section id="panel-holidays" class="panel">
+        <div class="card">
+          <h2>🏖️ חופשי אורי — תשפ״ז</h2>
+          <p class="subtitle">לוח חגים ופעילויות בבתי תלמיד רעננה · 2026/2027</p>
+          <div class="holidays-legend">
+            <span>🎀 חופשה</span>
+            <span>🏕️ קייטנה</span>
+            <span>⛔ אין פעילות</span>
+          </div>
+          <div class="holidays-list" id="holidays-list"></div>
+        </div>
+      </section>
+
+      <!-- חופשות לני -->
+      <section id="panel-holidays-lani" class="panel">
+        <div class="card">
+          <h2>🧒 חופשות לני — גני יול״א תשפ״ז</h2>
+          <p class="subtitle">לוח פעילות גני יול״א רעננה · שנת הלימודים תשפ״ז</p>
+          <div class="holidays-legend">
+            <span>🎀 חופשה</span>
+            <span>☀️ פעילות יול״א</span>
+            <span>⛔ מיוחד / ללא יול״א</span>
+            <span>🌻 קיץ</span>
+          </div>
+          <div class="holidays-list" id="holidays-lani-list"></div>
+          <p class="footer-note">לאורך השנה בימי שישי אין פעילות יול״א — הגן פועל במתכונת משרד החינוך, אלא אם צוין אחרת.</p>
+        </div>
+      </section>
+
+      <!-- לוח משפחתי -->
+      <section id="panel-family-cal" class="panel">
+        <div class="card">
+          <h2>📆 לוח חופשות משפחתי</h2>
+          <p class="subtitle">חופשות אורי ולני יחד · אפשר להוסיף אירועים ולייצא ליומן בטלפון</p>
+          <div class="cal-actions">
+            <button type="button" class="cal-action-btn primary" id="cal-export-ics">📱 הוסף ליומן בטלפון</button>
+            <button type="button" class="cal-action-btn" id="cal-export-both">⚠️ ייצא רק ימים משותפים</button>
+          </div>
+          <p class="cal-export-hint">הקובץ ייפתח ביומן של הטלפון (או המחשב). אחרי הייבוא אפשר להגדיר תזכורת לכל אירוע.</p>
+          <form class="cal-add-form" id="cal-add-form">
+            <label>כותרת
+              <input type="text" id="cal-ev-title" placeholder="לדוגמה: חוג / תורנות" required maxlength="80" />
+            </label>
+            <label>מתאריך
+              <input type="date" id="cal-ev-start" required />
+            </label>
+            <label>עד תאריך
+              <input type="date" id="cal-ev-end" />
+            </label>
+            <label>שייך ל
+              <select id="cal-ev-who">
+                <option value="family">משפחה</option>
+                <option value="ori">אורי</option>
+                <option value="lani">לני</option>
+                <option value="both">שניהם</option>
+              </select>
+            </label>
+            <button type="submit" class="cal-action-btn primary cal-add-submit">➕ הוסף ללוח</button>
+          </form>
+          <div class="cal-toolbar">
+            <div class="cal-nav">
+              <button type="button" id="cal-prev" title="חודש קודם">→</button>
+              <div class="cal-month-label" id="cal-month-label">—</div>
+              <button type="button" id="cal-next" title="חודש הבא">←</button>
+            </div>
+            <div class="cal-legend">
+              <span><i class="cal-dot ori"></i> חופשת אורי</span>
+              <span><i class="cal-dot camp"></i> קייטנת אורי</span>
+              <span><i class="cal-dot lani"></i> חופשת לני</span>
+              <span><i class="cal-dot yela"></i> יול״א (לני)</span>
+              <span><i class="cal-dot custom"></i> שלי</span>
+              <span><i class="cal-dot both"></i> שתייהן בחופשה ⚠️</span>
+            </div>
+          </div>
+          <div class="cal-both-alert" id="cal-both-alert" role="status"></div>
+          <div class="cal-grid-wrap">
+            <div class="cal-grid" id="cal-grid"></div>
+          </div>
+          <h3 style="margin:18px 0 8px;font-family:Fredoka,sans-serif;font-size:1.05rem;">האירועים שלי</h3>
+          <div class="cal-custom-list" id="cal-custom-list"></div>
+        </div>
+      </section>
+
+      <!-- התראות -->
+      <section id="panel-alerts" class="panel">
+        <div class="card">
+          <h2>🔔 כל ההתראות</h2>
+          <p class="subtitle">סמני ✓ אם ראית · ✕ אם עדיין לא. הסימון נשמר במחשב שלך</p>
+          <div class="counters" style="margin-bottom: 18px;">
+            <div class="counter info">
+              <div class="num" id="alert-total">35</div>
+              <div class="label">סה״כ התראות</div>
+            </div>
+            <div class="counter good">
+              <div class="num" id="alert-seen">0</div>
+              <div class="label">ראיתי ✓</div>
+            </div>
+            <div class="counter warn">
+              <div class="num" id="alert-unseen">0</div>
+              <div class="label">עדיין לא ✕</div>
+            </div>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>ראיתי?</th>
+                <th>תוכן</th>
+                <th>מועד</th>
+                <th>קטגוריה</th>
+              </tr>
+            </thead>
+            <tbody id="alerts-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- הודעות -->
+      <section id="panel-messages" class="panel">
+        <div class="card">
+          <h2>💌 תיבת הודעות — סיכום קצר</h2>
+          <p class="subtitle">3 הודעות בתיבה · 0 שלא נקראו</p>
+
+          <div class="sign-banner" id="sign-banner"></div>
+
+          <div class="msg-card">
+            <h3>יציאה להצגה</h3>
+            <div class="from">מאת: אוצ׳לדייב אלבינה (מורה) · 16/11/2026</div>
+            <div class="summary">הודעה עם קובץ אישור יציאה להצגה (טביעת אצבע של אייל). ללא טקסט בגוף ההודעה. כבר נחתם עבור אורי באותו יום.</div>
+          </div>
+
+          <div class="msg-card">
+            <h3>יציאה לפעילות אתלטיקה בחטיבת השרון — שכבה ב׳</h3>
+            <div class="from">מאת: אוצ׳לדייב אלבינה (מורה) · 16/10/2026</div>
+            <div class="summary">אישור יציאה לפעילות אתלטיקה קלה. מצורף קובץ Word. נחתם ב־19/10/2026.</div>
+          </div>
+
+          <div class="msg-card">
+            <h3>ציוד לשנת הלימודים תשפ״ז</h3>
+            <div class="from">מאת: קרקר רונה (מורה) · 19/07/2026</div>
+            <div class="summary">רשימת ציוד ראשונית לשנה החדשה. מחנכות הכיתה החדשות היו אמורות ליצור קשר ב־16.8. מצורף PDF של רשימת הציוד.</div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="progress-overlay" id="progress-overlay" aria-live="polite">
+    <div class="progress-card">
+      <h3>🔄 מעדכן עכשיו</h3>
+      <p class="hint" id="progress-hint">מושך נתונים טריים מ־Webtop…</p>
+      <div class="progress-bar"><i id="progress-fill"></i></div>
+      <ol class="steps" id="steps-list">
+        <li data-step="1"><div class="step-icon">1</div><div class="step-body"><strong>מתחבר ל־Webtop</strong><span></span></div></li>
+        <li data-step="2"><div class="step-icon">2</div><div class="step-body"><strong>קורא הודעות</strong><span></span></div></li>
+        <li data-step="3"><div class="step-icon">3</div><div class="step-body"><strong>בודק חתימות ואישורים</strong><span></span></div></li>
+        <li data-step="4"><div class="step-icon">4</div><div class="step-body"><strong>אוסף התראות</strong><span></span></div></li>
+        <li data-step="5"><div class="step-icon">5</div><div class="step-body"><strong>אוסף שיעורי בית</strong><span></span></div></li>
+        <li data-step="6"><div class="step-icon">6</div><div class="step-body"><strong>אוסף אירועי שיעור ומונה</strong><span></span></div></li>
+        <li data-step="7"><div class="step-icon">7</div><div class="step-body"><strong>שומר ומעדכן את הדף</strong><span></span></div></li>
+      </ol>
+      <div class="progress-actions">
+        <button type="button" id="close-progress" hidden>סגור</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let alerts = [];
+    let eventsData = [];
+    let messagesData = [];
+    let homeworkData = { total: 0, subjects_count: 0, this_week: 0, by_subject: [] };
+    let metaForSummary = { unread: 0, activity: 0, pending: 0 };
+    const storageKey = "ori-weekly-seen-v1";
+    const hwDoneKey = "ori-hw-done-v1";
+    const hwFilterKey = "ori-hw-filter-v1";
+    let hwFilter = localStorage.getItem(hwFilterKey) || "open";
+    if (!["open", "done", "all"].includes(hwFilter)) hwFilter = "open";
+    const dayKey = "ori-day-date-v1";
+    const weekKey = "ori-week-start-v1";
+    const monthKey = "ori-month-v1";
+    const modeKey = "ori-summary-mode-v1";
+    const saved = JSON.parse(localStorage.getItem(storageKey) || "{}");
+    const hwDone = JSON.parse(localStorage.getItem(hwDoneKey) || "{}");
+    const HEB_DAYS = ["ראשון", "שני", "שלישי", "רביעי", "חמישי", "שישי", "שבת"];
+    const HEB_MONTHS = ["ינואר","פברואר","מרץ","אפריל","מאי","יוני","יולי","אוגוסט","ספטמבר","אוקטובר","נובמבר","דצמבר"];
+    let summaryMode = "weekly";
+    const STEP_TITLES = {
+      1: "מתחבר ל־Webtop",
+      2: "קורא הודעות",
+      3: "בודק חתימות ואישורים",
+      4: "אוסף התראות",
+      5: "אוסף שיעורי בית",
+      6: "אוסף אירועי שיעור ומונה",
+      7: "שומר ומעדכן את הדף"
+    };
+
+    function esc(s) {
+      return String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
+    }
+
+    function eventClass(type) {
+      if (type === "מילה טובה") return "good-event";
+      if (type === "הפרעה") return "bad-event";
+      return "special-event";
+    }
+
+    function getAlertState(i) {
+      return saved[i] ?? (alerts[i]?.unread ? "no" : "yes");
+    }
+
+    function updateAlertCounters() {
+      let seen = 0, unseen = 0;
+      alerts.forEach((_, i) => {
+        if (getAlertState(i) === "yes") seen++;
+        else unseen++;
+      });
+      document.getElementById("alert-total").textContent = alerts.length;
+      document.getElementById("alert-seen").textContent = seen;
+      document.getElementById("alert-unseen").textContent = unseen;
+    }
+
+    function renderAlerts() {
+      const tbody = document.getElementById("alerts-body");
+      tbody.innerHTML = alerts.map((a, i) => {
+        const state = getAlertState(i);
+        return `
+          <tr data-idx="${i}">
+            <td class="seen-cell">
+              <div class="toggle-seen">
+                <button type="button" class="mark-btn yes ${state === "yes" ? "active" : ""}" data-val="yes" title="ראיתי">✓</button>
+                <button type="button" class="mark-btn no ${state === "no" ? "active" : ""}" data-val="no" title="עדיין לא">✕</button>
+              </div>
+            </td>
+            <td>
+              <span class="status-dot ${a.unread ? "unread" : "read"}" title="${a.unread ? "לא נקראה במערכת" : "נקראה במערכת"}"></span>
+              ${esc(a.content)}
+            </td>
+            <td>${esc(a.date)}</td>
+            <td>${esc(a.cat)}</td>
+          </tr>`;
+      }).join("");
+      updateAlertCounters();
+    }
+
+    function pad2(n) { return String(n).padStart(2, "0"); }
+
+    function toIso(dt) {
+      return `${dt.getFullYear()}-${pad2(dt.getMonth() + 1)}-${pad2(dt.getDate())}`;
+    }
+
+    function parseIso(iso) {
+      const [y, m, d] = (iso || "").split("-").map(Number);
+      if (!y || !m || !d) return null;
+      return new Date(y, m - 1, d);
+    }
+
+    function startOfWeek(dt) {
+      const d = new Date(dt.getFullYear(), dt.getMonth(), dt.getDate());
+      d.setDate(d.getDate() - d.getDay()); // Sunday
+      return d;
+    }
+
+    function addDays(dt, n) {
+      const d = new Date(dt.getFullYear(), dt.getMonth(), dt.getDate());
+      d.setDate(d.getDate() + n);
+      return d;
+    }
+
+    function parseDataDate(text, fallbackYear) {
+      const t = String(text || "");
+      let m = t.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+      if (m) return new Date(+m[3], +m[2] - 1, +m[1]);
+      m = t.match(/(\d{2})\/(\d{2})/);
+      if (m) return new Date(fallbackYear || 2026, +m[2] - 1, +m[1]);
+      return null;
+    }
+
+    function inRange(dt, start, end) {
+      if (!dt) return false;
+      const t = dt.getTime();
+      return t >= start.getTime() && t <= end.getTime();
+    }
+
+    function emptyDay(msg) {
+      return `<div class="day-empty">${esc(msg)}</div>`;
+    }
+
+    function getSummaryRange() {
+      if (summaryMode === "daily") {
+        const dt = parseIso(document.getElementById("day-date").value);
+        if (!dt) return null;
+        const start = new Date(dt.getFullYear(), dt.getMonth(), dt.getDate(), 0, 0, 0);
+        const end = new Date(dt.getFullYear(), dt.getMonth(), dt.getDate(), 23, 59, 59);
+        return {
+          start, end, year: dt.getFullYear(),
+          heading: `יום ${HEB_DAYS[dt.getDay()]}, ${pad2(dt.getDate())}/${pad2(dt.getMonth() + 1)}/${dt.getFullYear()}`,
+          scope: "ביום זה"
+        };
+      }
+      if (summaryMode === "monthly") {
+        const val = document.getElementById("month-date").value;
+        if (!val) return null;
+        const [y, m] = val.split("-").map(Number);
+        const start = new Date(y, m - 1, 1, 0, 0, 0);
+        const end = new Date(y, m, 0, 23, 59, 59);
+        return {
+          start, end, year: y,
+          heading: `${HEB_MONTHS[m - 1]} ${y}`,
+          scope: "בחודש זה"
+        };
+      }
+      // weekly
+      const weekStart = parseIso(document.getElementById("week-label-btn").dataset.start);
+      if (!weekStart) return null;
+      const start = new Date(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate(), 0, 0, 0);
+      const end = addDays(start, 6);
+      end.setHours(23, 59, 59, 999);
+      return {
+        start, end, year: start.getFullYear(),
+        heading: `שבוע ${pad2(start.getDate())}/${pad2(start.getMonth() + 1)} – ${pad2(end.getDate())}/${pad2(end.getMonth() + 1)}/${end.getFullYear()}`,
+        scope: "בשבוע זה"
+      };
+    }
+
+    function filterByRange(text, range) {
+      const dt = parseDataDate(text, range.year);
+      return inRange(dt, range.start, range.end);
+    }
+
+    function renderDaily() {
+      updatePickerVisibility();
+      const range = getSummaryRange();
+      const periodWord = summaryMode === "daily" ? "ביום זה" : summaryMode === "monthly" ? "בחודש זה" : "בשבוע זה";
+      document.getElementById("day-hw-title").textContent = `📚 שיעורי בית ${periodWord}`;
+      document.getElementById("day-ev-title").textContent = `🎯 אירועי שיעור ${periodWord}`;
+      document.getElementById("day-al-title").textContent = `🔔 התראות ${periodWord}`;
+      document.getElementById("day-msg-title").textContent = `💌 הודעות ${periodWord}`;
+
+      if (!range) {
+        document.getElementById("day-heading").textContent = "—";
+        document.getElementById("day-hw-n").textContent = "0";
+        document.getElementById("day-ev-n").textContent = "0";
+        document.getElementById("day-al-n").textContent = "0";
+        ["day-hw", "day-events", "day-alerts", "day-messages"].forEach(id => {
+          document.getElementById(id).innerHTML = emptyDay("בחרי תקופה");
+        });
+        return;
+      }
+
+      document.getElementById("day-heading").textContent = range.heading;
+      if (summaryMode === "weekly") {
+        document.getElementById("week-label-btn").textContent = "📅 " + range.heading;
+      }
+
+      const dayHw = [];
+      (homeworkData.by_subject || []).forEach(s => {
+        (s.items || []).forEach(it => {
+          if (filterByRange(it.date, range)) dayHw.push({ subject: s.name, pill: s.pill, ...it });
+        });
+      });
+      const dayEvents = (eventsData || []).filter(e => filterByRange(e.date, range));
+      const dayAlerts = (alerts || []).filter(a => filterByRange(a.date, range));
+      const dayMsgs = (messagesData || []).filter(m =>
+        filterByRange(m.from, range) || filterByRange(m.title, range) || filterByRange(m.summary, range)
+      );
+
+      // Hero dashboard — לפי התקופה שנבחרה
+      const hwLeft = dayHw.filter(it => !isHwDone(hwId(it.subject, it))).length;
+      const goodN = dayEvents.filter(e => e.type === "מילה טובה").length;
+      const badN = dayEvents.filter(e => e.type === "הפרעה").length;
+      const activityN = dayEvents.filter(e => e.type === "יציאה לפעילות מקדמת").length;
+      document.getElementById("day-hw-n").textContent = hwLeft;
+      document.getElementById("day-ev-n").textContent = dayEvents.length;
+      document.getElementById("day-al-n").textContent = dayAlerts.length;
+      document.getElementById("dash-hw").textContent = hwLeft;
+      document.getElementById("dash-good").textContent = goodN;
+      document.getElementById("dash-bad").textContent = badN;
+      document.getElementById("dash-alerts").textContent = dayAlerts.length;
+      document.getElementById("dash-msgs").textContent = dayMsgs.length;
+      document.getElementById("dash-signs").textContent = metaForSummary.pending ?? 0;
+      const signTxt = (metaForSummary.pending ?? 0) === 0 ? "אין חתימות ממתינות" : metaForSummary.pending + " חתימות ממתינות";
+      document.getElementById("dash-summary").innerHTML =
+        `במבט על (${esc(range.heading)}): ${hwLeft} שיעורי בית נותרו` +
+        (activityN ? ` · ${activityN} יציאות לפעילות` : "") +
+        ` · ${dayAlerts.length} התראות · ${signTxt}`;
+
+      if (!dayHw.length) {
+        document.getElementById("day-hw").innerHTML = emptyDay(`אין שיעורי בית ${periodWord}`);
+      } else {
+        const bySub = {};
+        dayHw.forEach(it => {
+          (bySub[it.subject] ||= { pill: it.pill, items: [] }).items.push(it);
+        });
+        document.getElementById("day-hw").innerHTML = `<table><thead><tr><th>מקצוע</th><th>שיעורי בית</th></tr></thead><tbody>${
+          Object.entries(bySub).map(([name, s]) => {
+            const items = s.items.slice().sort((a, b) => {
+              const ad = isHwDone(hwId(name, a));
+              const bd = isHwDone(hwId(name, b));
+              if (ad !== bd) return ad ? 1 : -1;
+              return 0;
+            });
+            const left = items.filter(it => !isHwDone(hwId(name, it))).length;
+            return `<tr>
+              <td class="subject">
+                <span class="subject-pill ${esc(s.pill || "other")}">${esc(name)}</span>
+                <span class="subject-count"><strong>${left}</strong> נותרו ${periodWord}</span>
+              </td>
+              <td><ol class="hw-list">${items.map(it => {
+                const id = hwId(name, it);
+                const done = isHwDone(id);
+                return `<li class="${done ? "done" : ""}" data-hw-id="${encodeURIComponent(id)}">
+                  <input type="checkbox" class="hw-check" ${done ? "checked" : ""} title="בוצע" aria-label="בוצע" />
+                  <span class="hw-text"><span class="hw-date">${esc(it.date)}</span>${esc(it.text)}</span>
+                </li>`;
+              }).join("")}</ol></td>
+            </tr>`;
+          }).join("")
+        }</tbody></table>`;
+      }
+
+      if (!dayEvents.length) {
+        document.getElementById("day-events").innerHTML = emptyDay(`אין אירועי שיעור ${periodWord}`);
+      } else {
+        document.getElementById("day-events").innerHTML = `<table class="events-table"><thead><tr><th>סוג</th><th>תאריך</th><th>שיעור</th><th>מקצוע / מורה</th></tr></thead><tbody>${
+          dayEvents.map(e => `<tr><td class="${eventClass(e.type)}">${esc(e.type)}</td><td>${esc(e.date)}</td><td>${esc(e.lesson)}</td><td>${esc(e.subject)}</td></tr>`).join("")
+        }</tbody></table>`;
+      }
+
+      if (!dayAlerts.length) {
+        document.getElementById("day-alerts").innerHTML = emptyDay(`אין התראות ${periodWord}`);
+      } else {
+        document.getElementById("day-alerts").innerHTML = `<table><thead><tr><th>תוכן</th><th>מועד</th><th>קטגוריה</th></tr></thead><tbody>${
+          dayAlerts.map(a => `<tr><td>${esc(a.content)}</td><td>${esc(a.date)}</td><td>${esc(a.cat)}</td></tr>`).join("")
+        }</tbody></table>`;
+      }
+
+      if (!dayMsgs.length) {
+        document.getElementById("day-messages").innerHTML = emptyDay(`אין הודעות ${periodWord}`);
+      } else {
+        document.getElementById("day-messages").innerHTML = dayMsgs.map(m =>
+          `<div class="msg-card"><h3>${esc(m.title)}</h3><div class="from">מאת: ${esc(m.from)}</div><div class="summary">${esc(m.summary)}</div></div>`
+        ).join("");
+      }
+    }
+
+    function updatePickerVisibility() {
+      const mode = summaryMode || "";
+      document.getElementById("picker-daily").hidden = mode !== "daily";
+      document.getElementById("picker-weekly").hidden = mode !== "weekly";
+      document.getElementById("picker-monthly").hidden = mode !== "monthly";
+      const sel = document.getElementById("summary-mode");
+      if (sel && mode && sel.value !== mode) sel.value = mode;
+    }
+
+    function setWeekStart(dt) {
+      const start = startOfWeek(dt);
+      const iso = toIso(start);
+      const el = document.getElementById("week-label-btn");
+      el.dataset.start = iso;
+      localStorage.setItem(weekKey, iso);
+    }
+
+    function shiftIsoDate(inputId, days) {
+      const el = document.getElementById(inputId);
+      const dt = parseIso(el.value) || new Date();
+      el.value = toIso(addDays(dt, days));
+      localStorage.setItem(inputId === "day-date" ? dayKey : monthKey, el.value);
+    }
+
+    function shiftMonth(delta) {
+      const el = document.getElementById("month-date");
+      let [y, m] = (el.value || toIso(new Date()).slice(0, 7)).split("-").map(Number);
+      m += delta;
+      while (m < 1) { m += 12; y -= 1; }
+      while (m > 12) { m -= 12; y += 1; }
+      el.value = `${y}-${pad2(m)}`;
+      localStorage.setItem(monthKey, el.value);
+    }
+
+    function applyModeDefaults(mode) {
+      const now = new Date();
+      const dayInput = document.getElementById("day-date");
+      const monthInput = document.getElementById("month-date");
+      if (mode === "daily") {
+        dayInput.value = toIso(now);
+        localStorage.setItem(dayKey, dayInput.value);
+      } else if (mode === "weekly") {
+        setWeekStart(now);
+      } else if (mode === "monthly") {
+        monthInput.value = `${now.getFullYear()}-${pad2(now.getMonth() + 1)}`;
+        localStorage.setItem(monthKey, monthInput.value);
+      }
+    }
+
+    let summaryPickerReady = false;
+    function initDayPicker() {
+      const dayInput = document.getElementById("day-date");
+      const monthInput = document.getElementById("month-date");
+
+      // דיפולט: שבועי + שבוע נוכחי
+      summaryMode = "weekly";
+      localStorage.setItem(modeKey, "weekly");
+      document.getElementById("summary-mode").value = "weekly";
+      applyModeDefaults("daily");   // גם ממלא היום הנוכחי למוכנות
+      applyModeDefaults("monthly"); // גם ממלא החודש הנוכחי
+      applyModeDefaults("weekly");  // שבוע נוכחי — האחרון כי זה הדיפולט
+
+      if (!summaryPickerReady) {
+        summaryPickerReady = true;
+        document.getElementById("summary-mode").addEventListener("change", (e) => {
+          summaryMode = e.target.value || "weekly";
+          localStorage.setItem(modeKey, summaryMode);
+          applyModeDefaults(summaryMode); // יומי→היום, שבועי→השבוע, חודשי→החודש
+          renderDaily();
+        });
+        dayInput.addEventListener("change", () => {
+          localStorage.setItem(dayKey, dayInput.value);
+          renderDaily();
+        });
+        monthInput.addEventListener("change", () => {
+          localStorage.setItem(monthKey, monthInput.value);
+          renderDaily();
+        });
+        document.getElementById("day-prev").addEventListener("click", () => { shiftIsoDate("day-date", -1); renderDaily(); });
+        document.getElementById("day-next").addEventListener("click", () => { shiftIsoDate("day-date", 1); renderDaily(); });
+        document.getElementById("week-prev").addEventListener("click", () => {
+          const cur = parseIso(document.getElementById("week-label-btn").dataset.start) || new Date();
+          setWeekStart(addDays(cur, -7));
+          renderDaily();
+        });
+        document.getElementById("week-next").addEventListener("click", () => {
+          const cur = parseIso(document.getElementById("week-label-btn").dataset.start) || new Date();
+          setWeekStart(addDays(cur, 7));
+          renderDaily();
+        });
+        document.getElementById("month-prev").addEventListener("click", () => { shiftMonth(-1); renderDaily(); });
+        document.getElementById("month-next").addEventListener("click", () => { shiftMonth(1); renderDaily(); });
+      }
+      renderDaily();
+    }
+
+    function hwId(subject, item) {
+      return subject + "|" + (item.date || "") + "|" + (item.text || "");
+    }
+
+    function isHwDone(id) {
+      return !!hwDone[id];
+    }
+
+    function setHwDone(id, done) {
+      if (done) hwDone[id] = true;
+      else delete hwDone[id];
+      localStorage.setItem(hwDoneKey, JSON.stringify(hwDone));
+    }
+
+    function countHwStats() {
+      let total = 0, done = 0;
+      const subjectsLeft = new Set();
+      (homeworkData.by_subject || []).forEach(s => {
+        let left = 0;
+        (s.items || []).forEach(it => {
+          total++;
+          if (isHwDone(hwId(s.name, it))) done++;
+          else {
+            left++;
+            subjectsLeft.add(s.name);
+          }
+        });
+        s._left = left;
+      });
+      return { total, done, remaining: total - done, subjectsLeft: subjectsLeft.size };
+    }
+
+    function parseHwDate(text) {
+      const m = String(text || "").match(/(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?/);
+      if (!m) return 0;
+      const d = Number(m[1]), mo = Number(m[2]);
+      let y = m[3] ? Number(m[3]) : new Date().getFullYear();
+      if (y < 100) y += 2000;
+      return y * 10000 + mo * 100 + d;
+    }
+
+    function syncHwFilterButtons() {
+      document.querySelectorAll(".hw-filter-btn").forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.hwFilter === hwFilter);
+      });
+    }
+
+    function updateHwCounters() {
+      const stats = countHwStats();
+      document.getElementById("hw-remaining").textContent = stats.remaining;
+      document.getElementById("hw-subjects").textContent = stats.subjectsLeft;
+      document.getElementById("hw-done-count").textContent = stats.done;
+
+      document.querySelectorAll("#hw-body tr[data-subject]").forEach(row => {
+        const name = decodeURIComponent(row.dataset.subject || "");
+        const subj = (homeworkData.by_subject || []).find(s => s.name === name);
+        const left = subj ? subj._left : 0;
+        const shown = Number(row.dataset.shown || 0);
+        const el = row.querySelector(".subject-count");
+        if (!el) return;
+        if (hwFilter === "done") {
+          const doneN = (subj?.items || []).filter(it => isHwDone(hwId(name, it))).length;
+          el.innerHTML = `<strong>${doneN}</strong> בוצעו`;
+        } else if (hwFilter === "all") {
+          el.innerHTML = `<strong>${left}</strong> נותרו · ${shown} מוצגים`;
+        } else {
+          const label = left === 1 ? "שיעור בית נותר" : "שיעורי בית נותרו";
+          el.innerHTML = `<strong>${left}</strong> ${label}`;
+        }
+      });
+
+      const filterHint =
+        hwFilter === "open" ? "מציג רק שלא בוצעו" :
+        hwFilter === "done" ? "מציג רק שבוצעו" : "מציג הכל";
+      document.getElementById("hw-footer").textContent =
+        `⭐ ${filterHint} · בוצעו ${stats.done} · נותרו ${stats.remaining}`;
+
+      // רענון דשבורד לפי תקופה שנבחרה
+      if (typeof renderDaily === "function") renderDaily();
+    }
+
+    function renderHomework() {
+      const hwBody = document.getElementById("hw-body");
+      if (!hwBody) return;
+      syncHwFilterButtons();
+      const subjects = homeworkData.by_subject || [];
+      const rows = subjects.map(s => {
+        const items = (s.items || [])
+          .map(it => ({ ...it, _id: hwId(s.name, it), _done: isHwDone(hwId(s.name, it)) }))
+          .filter(it => {
+            if (hwFilter === "open") return !it._done;
+            if (hwFilter === "done") return it._done;
+            return true;
+          })
+          .sort((a, b) => {
+            if (a._done !== b._done) return a._done ? 1 : -1;
+            return parseHwDate(b.date) - parseHwDate(a.date);
+          });
+        if (!items.length) return "";
+        const itemsHtml = items.map(it => {
+          return `<li class="${it._done ? "done" : ""}" data-hw-id="${encodeURIComponent(it._id)}">
+            <input type="checkbox" class="hw-check" ${it._done ? "checked" : ""} title="בוצע" aria-label="בוצע" />
+            <span class="hw-text"><span class="hw-date">${esc(it.date)}</span>${esc(it.text)}</span>
+          </li>`;
+        }).join("");
+        return `<tr data-subject="${encodeURIComponent(s.name)}" data-shown="${items.length}">
+          <td class="subject">
+            <span class="subject-pill ${esc(s.pill || "other")}">${esc(s.name)}</span>
+            <span class="subject-count"><strong>0</strong> שיעורי בית נותרו</span>
+          </td>
+          <td><ol class="hw-list">${itemsHtml}</ol></td>
+        </tr>`;
+      }).filter(Boolean);
+      hwBody.innerHTML = rows.length
+        ? rows.join("")
+        : `<tr><td colspan="2" style="text-align:center;padding:24px;color:var(--muted);">
+            ${hwFilter === "open" ? "אין שיעורי בית שנותרו לעשות 🎉" :
+              hwFilter === "done" ? "עדיין אין שיעורי בית שסומנו כבוצעו" :
+              "אין שיעורי בית"}
+          </td></tr>`;
+      updateHwCounters();
+    }
+
+    function applyData(data) {
+      document.getElementById("chip-school").textContent = "🏫 " + (data.school || "");
+      if (data.updated_at) {
+        const d = new Date(data.updated_at);
+        document.getElementById("chip-updated").textContent = "⏱️ עודכן: " + d.toLocaleString("he-IL");
+      }
+
+      homeworkData = data.homework || { total: 0, subjects_count: 0, this_week: 0, by_subject: [] };
+      eventsData = data.events || [];
+      messagesData = data.messages?.items || [];
+      const counts = data.event_counts || {};
+      const activity = counts["יציאה לפעילות מקדמת"] ?? 0;
+      const unread = data.unread_notifications ?? 0;
+      const pending = data.signatures?.pending ?? 0;
+      metaForSummary = { unread, activity, pending };
+
+      document.getElementById("dash-signs").textContent = pending;
+
+      alerts = data.alerts || [];
+      renderHomework();
+      renderAlerts();
+      renderSignatures(data.signatures || {});
+
+      const msgCard = document.querySelector("#panel-messages .card");
+      if (msgCard) {
+        const items = messagesData;
+        const sub = msgCard.querySelector(".subtitle");
+        if (sub) sub.textContent = `${items.length} הודעות בתיבה · ${data.messages?.unread ?? 0} שלא נקראו`;
+        [...msgCard.querySelectorAll(".msg-card")].forEach(el => el.remove());
+        items.forEach(m => {
+          const div = document.createElement("div");
+          div.className = "msg-card";
+          div.innerHTML = `<h3>${esc(m.title)}</h3><div class="from">מאת: ${esc(m.from)}</div><div class="summary">${esc(m.summary)}</div>`;
+          msgCard.appendChild(div);
+        });
+      }
+
+      // דשבורד + סיכום יומי/שבועי/חודשי לפי התקופה הנוכחית
+      renderDaily();
+    }
+
+    async function refreshEverything() {
+      await loadData();
+      updatePickerVisibility();
+      renderHomework();
+      renderAlerts();
+      renderDaily();
+    }
+
+    function openSignatures(url) {
+      const apiBase = location.protocol === "file:" ? "http://127.0.0.1:8765" : "";
+      const q = url ? ("?url=" + encodeURIComponent(url)) : "";
+      return fetch(apiBase + "/api/open-signatures" + q)
+        .then(r => r.json())
+        .then(d => {
+          if (!d.ok) alert(d.message || "לא הצלחתי לפתוח את Webtop");
+          else alert("נפתח חלון Webtop.\nאם מופיע «יש לאמת שאינך רובוט» — לחצי עליו פעם אחת ואז על כניסה.\nבפעמים הבאות לרוב לא יידרש שוב.");
+        })
+        .catch(() => {
+          alert("הפעילי קודם את «הפעל-סיכום.bat» ואז נסי שוב — אז ייפתח Webtop עם התחברות אוטומטית");
+        });
+    }
+
+    function renderSignatures(sig) {
+      const banner = document.getElementById("sign-banner");
+      if (!banner) return;
+      const pending = sig.pending ?? 0;
+      const action = !!(sig.action_required || pending > 0);
+      const inbox = sig.inbox_url || "https://webtop.smartschool.co.il/signMessaes?view=Inbox";
+      const items = sig.items || [];
+      const pendingItems = items.filter(i => i.needs_action);
+      const doneItems = items.filter(i => !i.needs_action);
+
+      banner.classList.toggle("action-needed", action);
+
+      if (action) {
+        let html = `<div class="action-title">⚠️ פעולה נדרשת — ${pending} לחתימה</div>`;
+        html += `<div>יש מסמכים שממתינים לחתימה. הלינק פותח את Webtop כבר מחובר עם המשתמש שלך.</div>`;
+        html += `<button type="button" class="sign-link" data-sign-url="${esc(inbox)}">✍️ פתח חתימות ואישורים</button>`;
+        pendingItems.forEach(it => {
+          const link = it.link || inbox;
+          html += `<div class="sign-item">
+            <div><strong>${esc(it.title)}</strong><div class="meta">${esc(it.status || "ממתין לחתימה")}</div></div>
+            <button type="button" class="sign-link secondary" data-sign-url="${esc(link)}">חתימה ישירה ←</button>
+          </div>`;
+        });
+        if (doneItems.length) {
+          html += `<div class="meta" style="margin-top:10px">כבר נחתמו: ${doneItems.map(i => esc(i.title)).join(" · ")}</div>`;
+        }
+        banner.innerHTML = html;
+      } else {
+        let html = `<div class="action-title">✅ אין פעולה נדרשת</div>`;
+        html += `<div>אין חתימות ממתינות כרגע.</div>`;
+        if (doneItems.length) {
+          html += doneItems.map(it =>
+            `<div class="sign-item"><div><strong>${esc(it.title)}</strong><div class="meta">${esc(it.status || "נחתם")}</div></div></div>`
+          ).join("");
+        }
+        html += `<button type="button" class="sign-link secondary" data-sign-url="${esc(inbox)}">מעבר לחתימות ב־Webtop</button>`;
+        banner.innerHTML = html;
+      }
+    }
+
+    async function loadData() {
+      try {
+        const res = await fetch("data.json?ts=" + Date.now());
+        if (!res.ok) throw new Error("no data");
+        applyData(await res.json());
+      } catch (e) {
+        // keep current data if already loaded
+        if (!(homeworkData.by_subject || []).length) {
+          renderHomework();
+        }
+      }
+    }
+
+    function resetSteps() {
+      document.querySelectorAll("#steps-list li").forEach(li => {
+        li.className = "";
+        li.querySelector(".step-icon").textContent = li.dataset.step;
+        li.querySelector("span").textContent = "";
+        const n = li.dataset.step;
+        li.querySelector("strong").textContent = STEP_TITLES[n];
+      });
+      document.getElementById("progress-fill").style.width = "0%";
+      document.getElementById("close-progress").hidden = true;
+      document.getElementById("progress-hint").textContent = "מושך נתונים טריים מ־Webtop…";
+    }
+
+    function markStep(data) {
+      const n = Number(data.n);
+      if (!n) return;
+      const li = document.querySelector(`#steps-list li[data-step="${n}"]`);
+      if (!li) return;
+      document.querySelectorAll("#steps-list li").forEach(el => {
+        if (el.classList.contains("done") || el.classList.contains("error")) return;
+        el.classList.remove("active");
+      });
+      li.classList.remove("active", "done", "error");
+      if (data.status === "done") {
+        li.classList.add("done");
+        li.querySelector(".step-icon").textContent = "✓";
+      } else if (data.status === "error") {
+        li.classList.add("error");
+        li.querySelector(".step-icon").textContent = "!";
+      } else {
+        li.classList.add("active");
+      }
+      if (data.title) li.querySelector("strong").textContent = data.title;
+      li.querySelector("span").textContent = data.detail || "";
+      const total = data.total || 7;
+      const pct = data.status === "done" ? (n / total) * 100 : ((n - 0.35) / total) * 100;
+      document.getElementById("progress-fill").style.width = Math.max(5, Math.min(100, pct)) + "%";
+    }
+
+    async function runUpdate() {
+      const btn = document.getElementById("update-btn");
+      const overlay = document.getElementById("progress-overlay");
+      btn.disabled = true;
+      resetSteps();
+      overlay.classList.add("open");
+      document.getElementById("progress-hint").textContent =
+        "מעדכן הכל מ־Webtop: הודעות, חתימות, התראות, שיעורי בית ואירועים…";
+
+      const apiBase = location.protocol === "file:" ? "http://127.0.0.1:8765" : "";
+      try {
+        const res = await fetch(apiBase + "/api/update");
+        const ctype = (res.headers.get("content-type") || "").toLowerCase();
+        if (!res.ok) {
+          let msg = "שרת העדכון החזיר שגיאה " + res.status;
+          if (ctype.includes("application/json")) {
+            try {
+              const j = await res.json();
+              if (j && j.message) msg = j.message;
+            } catch (_) {}
+          }
+          throw new Error(msg);
+        }
+        if (!res.body || !ctype.includes("text/event-stream")) {
+          // לפעמים מגיע JSON במקום SSE
+          if (ctype.includes("application/json")) {
+            const j = await res.json();
+            throw new Error((j && j.message) || "עדכון לא זמין");
+          }
+          throw new Error("תשובת שרת לא תקינה");
+        }
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = "";
+        let ok = false;
+        let failMsg = "";
+        while (true) {
+          const { value, done } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          const parts = buffer.split("\n\n");
+          buffer = parts.pop() || "";
+          for (const chunk of parts) {
+            const lines = chunk.split("\n");
+            let event = "message";
+            let dataLine = "";
+            for (const line of lines) {
+              if (line.startsWith("event:")) event = line.slice(6).trim();
+              if (line.startsWith("data:")) dataLine += line.slice(5).trim();
+            }
+            if (!dataLine) continue;
+            const data = JSON.parse(dataLine);
+            if (event === "step") markStep(data);
+            if (event === "error") {
+              failMsg = data.message || "";
+              document.getElementById("progress-hint").textContent = "שגיאה: " + failMsg;
+            }
+            if (event === "done") {
+              ok = !!data.ok;
+              document.getElementById("progress-fill").style.width = "100%";
+              document.getElementById("progress-hint").textContent = data.message || (ok ? "העדכון הושלם!" : "העדכון נכשל");
+              if (!ok) failMsg = data.message || failMsg;
+            }
+          }
+        }
+        if (ok) {
+          document.getElementById("progress-hint").textContent = "מרענן את כל המסכים…";
+          await refreshEverything();
+          document.getElementById("progress-hint").textContent =
+            "הכל עודכן ✓ דשבורד, סיכום, שיעורי בית, התראות, הודעות וחתימות";
+        } else if (failMsg) {
+          document.getElementById("progress-hint").textContent = "העדכון נכשל: " + failMsg;
+        }
+      } catch (err) {
+        const msg = (err && err.message) ? String(err.message) : "";
+        document.getElementById("progress-hint").textContent =
+          msg && msg !== "server"
+            ? msg
+            : "לא ניתן להתחבר לשרת העדכון. במחשב הבית הפעילי «הפעל-סיכום-מרחוק.bat» + מנהרה, וב־Render הגדירי HOME_UPDATE_URL.";
+        document.querySelector('#steps-list li[data-step="1"]')?.classList.add("error");
+      } finally {
+        btn.disabled = false;
+        document.getElementById("close-progress").hidden = false;
+      }
+    }
+
+    function onHwCheckChange(e) {
+      const check = e.target.closest(".hw-check");
+      if (!check) return;
+      const li = check.closest("li");
+      const id = decodeURIComponent(li.dataset.hwId || "");
+      setHwDone(id, check.checked);
+      if (e.currentTarget.id === "hw-body") {
+        renderHomework();
+      } else {
+        // סיכום: רענון מלא כדי לעדכן מונים + רשימה
+        updateHwCounters();
+      }
+    }
+
+    document.getElementById("hw-body").addEventListener("change", onHwCheckChange);
+    document.getElementById("day-hw").addEventListener("change", onHwCheckChange);
+
+    document.querySelector(".hw-filter-row")?.addEventListener("click", (e) => {
+      const btn = e.target.closest(".hw-filter-btn");
+      if (!btn) return;
+      hwFilter = btn.dataset.hwFilter || "open";
+      localStorage.setItem(hwFilterKey, hwFilter);
+      renderHomework();
+    });
+
+    document.getElementById("sign-banner").addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-sign-url]");
+      if (!btn) return;
+      e.preventDefault();
+      openSignatures(btn.getAttribute("data-sign-url"));
+    });
+
+    document.getElementById("alerts-body").addEventListener("click", (e) => {
+      const btn = e.target.closest(".mark-btn");
+      if (!btn) return;
+      const row = btn.closest("tr");
+      const idx = row.dataset.idx;
+      const val = btn.dataset.val;
+      saved[idx] = val;
+      localStorage.setItem(storageKey, JSON.stringify(saved));
+      row.querySelectorAll(".mark-btn").forEach(b => b.classList.toggle("active", b.dataset.val === val));
+      updateAlertCounters();
+    });
+
+    const scheduleKey = "ori-schedule-v1";
+    const SCHEDULE_DAYS = 6;
+    const SCHEDULE_HOURS = 10;
+    const DEFAULT_SCHEDULE = [
+      ["מתמטיקה", "שפה", "מדעים", "מתמטיקה", "העשרה", "כישורי חיים"],
+      ["שפה", "חנ״ג", "מתמטיקה", "מתמטיקה", "תנ״ך", "כישורי חיים"],
+      ["תנ״ך", "שבילי מורשת", "שפה", "שפה", "מתמטיקה", "אומנות"],
+      ["חנ״ג", "תל״ן", "אומנות", "שפה", "תל״ן", "אנגלית"],
+      ["שפה", "שפה", "שפה", "אנגלית", "מדעים", ""],
+      ["מדעים", "", "", "מוסיקה", "", ""],
+      ["", "", "", "", "", ""],
+      ["", "", "", "", "", ""],
+      ["", "", "", "", "", ""],
+      ["", "", "", "", "", ""]
+    ];
+
+    function cloneSchedule(grid) {
+      return grid.map(row => row.slice(0, SCHEDULE_DAYS));
+    }
+
+    function loadScheduleGrid() {
+      try {
+        const raw = JSON.parse(localStorage.getItem(scheduleKey) || "null");
+        if (Array.isArray(raw) && raw.length) {
+          const grid = [];
+          for (let h = 0; h < SCHEDULE_HOURS; h++) {
+            const src = Array.isArray(raw[h]) ? raw[h] : [];
+            grid.push(Array.from({ length: SCHEDULE_DAYS }, (_, d) => String(src[d] ?? "")));
+          }
+          return grid;
+        }
+      } catch (_) {}
+      return cloneSchedule(DEFAULT_SCHEDULE);
+    }
+
+    function saveScheduleGrid(grid) {
+      localStorage.setItem(scheduleKey, JSON.stringify(grid));
+      const el = document.getElementById("schedule-saved");
+      if (!el) return;
+      el.classList.add("show");
+      clearTimeout(saveScheduleGrid._t);
+      saveScheduleGrid._t = setTimeout(() => el.classList.remove("show"), 1400);
+    }
+
+    function scheduleSubjectClass(text) {
+      const t = String(text || "").trim();
+      if (!t) return "";
+      if (t.includes("מתמטיקה")) return "subj-math";
+      if (t.includes("שפה")) return "subj-lang";
+      if (t.includes("תנ")) return "subj-bible";
+      if (t.includes("חנ")) return "subj-pe";
+      if (t.includes("מדע")) return "subj-science";
+      if (t.includes("אומנות")) return "subj-art";
+      if (t.includes("אנגלית")) return "subj-english";
+      if (t.includes("מוסיקה") || t.includes("מוזיקה")) return "subj-music";
+      if (t.includes("העשרה")) return "subj-enrich";
+      if (t.includes("כישורי")) return "subj-life";
+      if (t.includes("מורשת")) return "subj-heritage";
+      if (t.includes("תל")) return "subj-extra";
+      return "";
+    }
+
+    let scheduleGrid = loadScheduleGrid();
+
+    function renderSchedule() {
+      const body = document.getElementById("schedule-body");
+      if (!body) return;
+      body.innerHTML = scheduleGrid.map((row, h) => {
+        const cells = row.map((val, d) => {
+          const cls = scheduleSubjectClass(val);
+          return `<td class="slot">
+            <input class="schedule-input ${cls}" type="text"
+              data-hour="${h}" data-day="${d}"
+              value="${esc(val)}" placeholder="—"
+              aria-label="שעה ${h + 1}, יום ${d + 1}" />
+          </td>`;
+        }).join("");
+        return `<tr>
+          <td class="hour-cell">שעה ${h + 1}</td>
+          ${cells}
+        </tr>`;
+      }).join("");
+    }
+
+    function onScheduleInput(e) {
+      const input = e.target.closest(".schedule-input");
+      if (!input) return;
+      const h = Number(input.dataset.hour);
+      const d = Number(input.dataset.day);
+      if (!Number.isFinite(h) || !Number.isFinite(d)) return;
+      scheduleGrid[h][d] = input.value;
+      input.className = "schedule-input " + scheduleSubjectClass(input.value);
+      saveScheduleGrid(scheduleGrid);
+    }
+
+    document.getElementById("schedule-body")?.addEventListener("input", onScheduleInput);
+    document.getElementById("schedule-body")?.addEventListener("change", onScheduleInput);
+
+    document.getElementById("schedule-reset")?.addEventListener("click", () => {
+      if (!confirm("לאפס את מערכת השעות למקורית מהתמונה?")) return;
+      scheduleGrid = cloneSchedule(DEFAULT_SCHEDULE);
+      saveScheduleGrid(scheduleGrid);
+      renderSchedule();
+    });
+
+    document.querySelectorAll(".nav-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".nav-btn").forEach(b => b.classList.remove("active"));
+        document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
+        btn.classList.add("active");
+        document.getElementById("panel-" + btn.dataset.tab).classList.add("active");
+        if (btn.dataset.tab === "family-cal") renderFamilyCalendar();
+      });
+    });
+
+    document.getElementById("update-btn").addEventListener("click", runUpdate);
+    document.getElementById("close-progress").addEventListener("click", () => {
+      document.getElementById("progress-overlay").classList.remove("open");
+    });
+
+    const HOLIDAYS = [
+      { icon: "🍎", name: "ראש השנה", date: "11–13/9/26", note: "חופשה", kind: "vacation" },
+      { icon: "⚖️", name: "יום הכיפורים", date: "20–21/9/26", note: "חופשה", kind: "vacation" },
+      { icon: "🌉", name: "ימים בין יום הכיפורים לסוכות", date: "22–24/9/26", note: "קייטנת גשר כיפור סוכות 8:00–16:30", kind: "camp" },
+      { icon: "🌿", name: "חג הסוכות", date: "25/9–3/10/26", note: "חופשה", kind: "vacation" },
+      { icon: "🗳️", name: "יום בחירות", date: "27/10/26", note: "אין פעילות", kind: "off" },
+      { icon: "🕎", name: "חנוכה", date: "6–10/12/26", note: "קייטנת חנוכה 8:00–16:30", kind: "camp" },
+      { icon: "🎭", name: "פורים", date: "23/3/27", note: "חופשה", kind: "vacation" },
+      { icon: "🎪", name: "פורים", date: "24/3/27", note: "קייטנת שושן פורים 8:00–16:30", kind: "camp" },
+      { icon: "🫓", name: "פסח", date: "13,14,15,18,19/4/27", note: "קייטנת פסח 8:00–16:30", kind: "camp" },
+      { icon: "🌸", name: "פסח", date: "20–28/4/27", note: "חופשת פסח", kind: "vacation" },
+      { icon: "🇮🇱", name: "ערב יום העצמאות", date: "11/5/27", note: "אין פעילות בצהרון", kind: "off" },
+      { icon: "🎉", name: "יום העצמאות", date: "12/5/27", note: "חופשה", kind: "vacation" },
+      { icon: "🧺", name: "חג השבועות", date: "10–11/6/27", note: "חופשה", kind: "vacation" }
+    ];
+
+    const LANI_HOLIDAYS = [
+      { icon: "🍎", name: "ראש השנה", date: "11–13.09.26", note: "חופשה", back: "חזרה 14.09.26", kind: "vacation" },
+      { icon: "🌉", name: "ימים שבין ר״ה ליוה״כ", date: "14–17.09.26", note: "פעילות יול״א 07:10–16:30", back: "", kind: "activity" },
+      { icon: "⚖️", name: "יום הכיפורים", date: "20–21.09.26", note: "חופשה", back: "חזרה 22.09.26", kind: "vacation" },
+      { icon: "🌿", name: "חול המועד סוכות", date: "22–24.09.26", note: "פעילות יול״א 07:10–16:30", back: "", kind: "activity" },
+      { icon: "🍋", name: "סוכות", date: "25.09.26", note: "חופשה", back: "חזרה 27.09.26", kind: "vacation" },
+      { icon: "🌿", name: "חול המועד סוכות", date: "27–28.09.26", note: "פעילות יול״א 07:10–16:30", back: "", kind: "activity" },
+      { icon: "📜", name: "שביעי של סוכות / שמחת תורה", date: "29.09–03.10.26", note: "חופשה", back: "חזרה 04.10.26", kind: "vacation" },
+      { icon: "🗳️", name: "יום בחירות", date: "27.10.26", note: "יום שבתון לאומי — חופשה", back: "חזרה 28.10.26", kind: "off" },
+      { icon: "🕎", name: "חנוכה", date: "06–10.12.26", note: "פעילות יול״א 07:10–16:30", back: "", kind: "activity" },
+      { icon: "🕎", name: "חנוכה", date: "11.12.26", note: "חופשה", back: "חזרה 13.12.26", kind: "vacation" },
+      { icon: "🎭", name: "פורים", date: "23.03.27", note: "חופשה", back: "חזרה 24.03.27", kind: "vacation" },
+      { icon: "🎪", name: "שושן פורים", date: "24.03.27", note: "פעילות יול״א 07:10–16:30", back: "", kind: "activity" },
+      { icon: "🫓", name: "ערב פסח / פסח", date: "13–15.04.27", note: "פעילות יול״א 07:10–16:30", back: "", kind: "activity" },
+      { icon: "🌸", name: "פסח", date: "16.04.27", note: "חופשה", back: "חזרה 18.04.27", kind: "vacation" },
+      { icon: "🫓", name: "חול המועד פסח", date: "18–19.04.27", note: "פעילות יול״א 07:10–16:30", back: "", kind: "activity" },
+      { icon: "🌸", name: "פסח", date: "20–28.04.27", note: "חופשה", back: "חזרה 29.04.27", kind: "vacation" },
+      { icon: "🕯️", name: "ערב יום הזיכרון / יום הזיכרון", date: "11.05.27", note: "הגן פועל עד 12:00 · אין פעילות יול״א", back: "", kind: "off" },
+      { icon: "🇮🇱", name: "יום העצמאות", date: "12.05.27", note: "חופשה", back: "חזרה 13.05.27", kind: "vacation" },
+      { icon: "🧺", name: "שבועות", date: "10–11.06.27", note: "חופשה", back: "חזרה 13.06.27", kind: "vacation" },
+      { icon: "🌻", name: "פעילות קיץ", date: "01.07–08.08.27", note: "פעילות קיץ יול״א", back: "", kind: "summer" }
+    ];
+
+    function holidayRowHtml(h) {
+      const back = h.back ? `<div class="holiday-back">${esc(h.back)}</div>` : "";
+      return `<article class="holiday-row kind-${esc(h.kind)}">
+        <div class="holiday-icon" aria-hidden="true">${h.icon}</div>
+        <div class="holiday-name">${esc(h.name)}</div>
+        <div class="holiday-date">${esc(h.date)}</div>
+        <div class="holiday-note"><strong>${esc(h.note)}</strong>${back}</div>
+      </article>`;
+    }
+
+    function renderHolidays() {
+      const list = document.getElementById("holidays-list");
+      if (list) list.innerHTML = HOLIDAYS.map(holidayRowHtml).join("");
+      const lani = document.getElementById("holidays-lani-list");
+      if (lani) lani.innerHTML = LANI_HOLIDAYS.map(holidayRowHtml).join("");
+    }
+
+    function isoKey(y, m, d) {
+      return `${y}-${pad2(m)}-${pad2(d)}`;
+    }
+
+    function normalizeYear(y) {
+      y = Number(y);
+      if (y < 100) y += 2000;
+      return y;
+    }
+
+    function parseOneDateToken(tok, defaultYear) {
+      // 11/9/26 | 11.09.26 | 11/9 | 11.09
+      const m = String(tok).match(/^(\d{1,2})[\/.](\d{1,2})(?:[\/.](\d{2,4}))?$/);
+      if (!m) return null;
+      const d = Number(m[1]), mo = Number(m[2]);
+      const y = m[3] ? normalizeYear(m[3]) : defaultYear;
+      if (!y || !mo || !d) return null;
+      return { y, m: mo, d };
+    }
+
+    function eachDateInRange(a, b, out) {
+      const start = new Date(a.y, a.m - 1, a.d);
+      const end = new Date(b.y, b.m - 1, b.d);
+      if (end < start) return;
+      for (let cur = new Date(start); cur <= end; cur.setDate(cur.getDate() + 1)) {
+        out.add(isoKey(cur.getFullYear(), cur.getMonth() + 1, cur.getDate()));
+      }
+    }
+
+    function expandHolidayDates(raw, defaultYear = 2026) {
+      const out = new Set();
+      let s = String(raw || "").trim().replace(/[–—−]/g, "-").replace(/\s+/g, "");
+      if (!s) return out;
+
+      // 13,14,15,18,19/4/27
+      const comma = s.match(/^([\d,]+)[\/.](\d{1,2})[\/.](\d{2,4})$/);
+      if (comma && s.includes(",")) {
+        const year = normalizeYear(comma[3]);
+        const month = Number(comma[2]);
+        comma[1].split(",").forEach(d => {
+          const day = Number(d);
+          if (day) out.add(isoKey(year, month, day));
+        });
+        return out;
+      }
+
+      // range: 11-13/9/26 | 11-13.09.26 | 25/9-3/10/26 | 29.09-03.10.26 | 01.07-08.08.27
+      if (s.includes("-")) {
+        const parts = s.split("-");
+        if (parts.length === 2) {
+          let left = parts[0];
+          let right = parts[1];
+          // 11-13/9/26 → left=11, right=13/9/26
+          if (/^\d{1,2}$/.test(left) && /[\/.]/.test(right)) {
+            const end = parseOneDateToken(right, defaultYear);
+            if (end) {
+              const start = { y: end.y, m: end.m, d: Number(left) };
+              eachDateInRange(start, end, out);
+              return out;
+            }
+          }
+          // 25/9-3/10/26 or 29.09-03.10.26
+          // If left lacks year, borrow from right
+          const end = parseOneDateToken(right, defaultYear);
+          let start = parseOneDateToken(left, end ? end.y : defaultYear);
+          if (start && end) {
+            if (!/[\/.]\d{2,4}$/.test(left) && end) start.y = end.y;
+            // cross-month without year on left already handled
+            eachDateInRange(start, end, out);
+            return out;
+          }
+        }
+      }
+
+      const one = parseOneDateToken(s, defaultYear);
+      if (one) out.add(isoKey(one.y, one.m, one.d));
+      return out;
+    }
+
+    function isOffKind(kind) {
+      return kind === "vacation" || kind === "off";
+    }
+
+    function isOriCampKind(kind) {
+      return kind === "camp";
+    }
+
+    function isLaniYelaKind(kind) {
+      return kind === "activity" || kind === "summer";
+    }
+
+    function buildHolidayMap(items, who, kindPred) {
+      const map = new Map(); // iso -> [{name, note, who, kind}]
+      (items || []).forEach(h => {
+        if (!kindPred(h.kind)) return;
+        expandHolidayDates(h.date).forEach(iso => {
+          const arr = map.get(iso) || [];
+          arr.push({ who, name: h.name, note: h.note, icon: h.icon, kind: h.kind });
+          map.set(iso, arr);
+        });
+      });
+      return map;
+    }
+
+    const oriOffMap = buildHolidayMap(HOLIDAYS, "ori", isOffKind);
+    const oriCampMap = buildHolidayMap(HOLIDAYS, "ori", isOriCampKind);
+    const laniOffMap = buildHolidayMap(LANI_HOLIDAYS, "lani", isOffKind);
+    const laniYelaMap = buildHolidayMap(LANI_HOLIDAYS, "lani", isLaniYelaKind);
+
+    let calYear = 2026;
+    let calMonth = 11; // 1-12, default Nov 2026 (current in project)
+
+    const customCalKey = "ori-family-cal-events-v1";
+    let customCalEvents = [];
+    try {
+      customCalEvents = JSON.parse(localStorage.getItem(customCalKey) || "[]");
+      if (!Array.isArray(customCalEvents)) customCalEvents = [];
+    } catch (_) {
+      customCalEvents = [];
+    }
+
+    function saveCustomCalEvents() {
+      localStorage.setItem(customCalKey, JSON.stringify(customCalEvents));
+    }
+
+    function whoLabel(who) {
+      return ({ family: "משפחה", ori: "אורי", lani: "לני", both: "שניהם" })[who] || who;
+    }
+
+    function eachIsoInclusive(startIso, endIso) {
+      const out = [];
+      const [ys, ms, ds] = startIso.split("-").map(Number);
+      const [ye, me, de] = (endIso || startIso).split("-").map(Number);
+      const start = new Date(ys, ms - 1, ds);
+      const end = new Date(ye, me - 1, de);
+      if (end < start) return [startIso];
+      for (let cur = new Date(start); cur <= end; cur.setDate(cur.getDate() + 1)) {
+        out.push(isoKey(cur.getFullYear(), cur.getMonth() + 1, cur.getDate()));
+      }
+      return out;
+    }
+
+    function buildCustomMap() {
+      const map = new Map();
+      customCalEvents.forEach(ev => {
+        eachIsoInclusive(ev.start, ev.end || ev.start).forEach(iso => {
+          const arr = map.get(iso) || [];
+          arr.push(ev);
+          map.set(iso, arr);
+        });
+      });
+      return map;
+    }
+
+    function shiftCalMonth(delta) {
+      calMonth += delta;
+      while (calMonth < 1) { calMonth += 12; calYear -= 1; }
+      while (calMonth > 12) { calMonth -= 12; calYear += 1; }
+      renderFamilyCalendar();
+    }
+
+    function renderCustomEventsList() {
+      const box = document.getElementById("cal-custom-list");
+      if (!box) return;
+      if (!customCalEvents.length) {
+        box.innerHTML = `<p class="empty-note">עדיין אין אירועים שהוספת — מלאי את הטופס למעלה</p>`;
+        return;
+      }
+      const sorted = customCalEvents.slice().sort((a, b) => String(a.start).localeCompare(String(b.start)));
+      box.innerHTML = sorted.map(ev => {
+        const range = ev.end && ev.end !== ev.start ? `${ev.start} → ${ev.end}` : ev.start;
+        return `<div class="cal-custom-item" data-id="${esc(ev.id)}">
+          <div>
+            <strong>${esc(ev.title)}</strong>
+            <div class="meta">${esc(range)} · ${esc(whoLabel(ev.who))}</div>
+          </div>
+          <button type="button" data-del-cal="${esc(ev.id)}">מחק</button>
+        </div>`;
+      }).join("");
+    }
+
+    function renderFamilyCalendar() {
+      const grid = document.getElementById("cal-grid");
+      const label = document.getElementById("cal-month-label");
+      const alertBox = document.getElementById("cal-both-alert");
+      if (!grid || !label) return;
+
+      label.textContent = `${HEB_MONTHS[calMonth - 1]} ${calYear}`;
+      const customMap = buildCustomMap();
+
+      const dows = ["ראשון", "שני", "שלישי", "רביעי", "חמישי", "שישי", "שבת"];
+      const first = new Date(calYear, calMonth - 1, 1);
+      const startPad = first.getDay(); // 0=Sun
+      const daysInMonth = new Date(calYear, calMonth, 0).getDate();
+      const prevDays = new Date(calYear, calMonth - 1, 0).getDate();
+
+      const bothInMonth = [];
+      const cells = [];
+
+      for (let i = 0; i < startPad; i++) {
+        const d = prevDays - startPad + 1 + i;
+        cells.push(`<div class="cal-cell out"><div class="cal-daynum">${d}</div></div>`);
+      }
+
+      const today = new Date();
+      const todayIso = isoKey(today.getFullYear(), today.getMonth() + 1, today.getDate());
+
+      for (let d = 1; d <= daysInMonth; d++) {
+        const iso = isoKey(calYear, calMonth, d);
+        const oriOff = oriOffMap.get(iso) || [];
+        const oriCamp = oriCampMap.get(iso) || [];
+        const laniOff = laniOffMap.get(iso) || [];
+        const laniYela = laniYelaMap.get(iso) || [];
+        const customs = customMap.get(iso) || [];
+        const hasOriOff = oriOff.length > 0;
+        const hasOriCamp = oriCamp.length > 0;
+        const hasLaniOff = laniOff.length > 0;
+        const hasYela = laniYela.length > 0;
+        const hasCustom = customs.length > 0;
+        const hasBoth = hasOriOff && hasLaniOff;
+
+        let cls = "cal-cell";
+        if (iso === todayIso) cls += " today";
+        if (hasBoth) cls += " has-both";
+        else if (hasYela) cls += " has-yela";
+        else if (hasOriCamp) cls += " has-camp";
+        else if (hasOriOff) cls += " has-ori";
+        else if (hasLaniOff) cls += " has-lani";
+        if (hasCustom) cls += " has-custom";
+
+        const marks = [];
+        if (hasBoth) marks.push(`<span class="cal-tag both">שתייהן ⚠️</span>`);
+        if (hasOriOff && !hasBoth) marks.push(`<span class="cal-tag ori">אורי</span>`);
+        if (hasOriCamp) marks.push(`<span class="cal-tag camp">קייטנה</span>`);
+        if (hasLaniOff && !hasBoth) marks.push(`<span class="cal-tag lani">לני</span>`);
+        if (hasYela) marks.push(`<span class="cal-tag yela">יול״א</span>`);
+        if (hasCustom) marks.push(`<span class="cal-tag custom">${esc(customs[0].title)}${customs.length > 1 ? " +" + (customs.length - 1) : ""}</span>`);
+
+        const tipParts = [];
+        if (hasOriOff) tipParts.push("אורי חופשה: " + oriOff.map(x => x.name).join(", "));
+        if (hasOriCamp) tipParts.push("אורי קייטנה: " + oriCamp.map(x => x.name).join(", "));
+        if (hasLaniOff) tipParts.push("לני חופשה: " + laniOff.map(x => x.name).join(", "));
+        if (hasYela) tipParts.push("יול״א: " + laniYela.map(x => x.name).join(", "));
+        if (hasCustom) tipParts.push("שלי: " + customs.map(x => x.title).join(", "));
+        const tip = tipParts.length
+          ? `<div class="cal-cell-tip">${esc(tipParts.join(" · "))}</div>`
+          : "";
+
+        if (hasBoth) {
+          bothInMonth.push({
+            day: d,
+            iso,
+            ori: oriOff.map(x => x.name).join(", "),
+            lani: laniOff.map(x => x.name).join(", ")
+          });
+        }
+
+        cells.push(`<div class="${cls}" data-iso="${iso}" title="${esc(tipParts.join(" | ") || "")}">
+          <div class="cal-daynum">${d}</div>
+          <div class="cal-marks">${marks.join("")}</div>
+          ${tip}
+        </div>`);
+      }
+
+      const totalCells = startPad + daysInMonth;
+      const trailing = (7 - (totalCells % 7)) % 7;
+      for (let d = 1; d <= trailing; d++) {
+        cells.push(`<div class="cal-cell out"><div class="cal-daynum">${d}</div></div>`);
+      }
+
+      grid.innerHTML =
+        dows.map(d => `<div class="cal-dow">${d}</div>`).join("") +
+        cells.join("");
+
+      if (alertBox) {
+        if (bothInMonth.length) {
+          alertBox.classList.add("show");
+          alertBox.innerHTML = `
+            <span class="alert-icon">⚠️</span>
+            <strong>${bothInMonth.length} ימים בחודש הזה שבהם גם אורי וגם לני בחופשה</strong>
+            <ul class="cal-both-list">${bothInMonth.map(b =>
+              `<li><strong>${pad2(b.day)}/${pad2(calMonth)}</strong> — אורי: ${esc(b.ori)} · לני: ${esc(b.lani)}</li>`
+            ).join("")}</ul>`;
+        } else {
+          alertBox.classList.remove("show");
+          alertBox.innerHTML = "";
+        }
+      }
+
+      renderCustomEventsList();
+    }
+
+    function icsEscape(text) {
+      return String(text || "")
+        .replace(/\\/g, "\\\\")
+        .replace(/\n/g, "\\n")
+        .replace(/,/g, "\\,")
+        .replace(/;/g, "\\;");
+    }
+
+    function icsStamp(dt = new Date()) {
+      return dt.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}Z$/, "Z");
+    }
+
+    function icsDay(iso) {
+      return String(iso).replace(/-/g, "");
+    }
+
+    function nextDayIso(iso) {
+      const [y, m, d] = iso.split("-").map(Number);
+      const dt = new Date(y, m - 1, d);
+      dt.setDate(dt.getDate() + 1);
+      return isoKey(dt.getFullYear(), dt.getMonth() + 1, dt.getDate());
+    }
+
+    function makeIcsEvent({ uid, title, description, startIso, endIsoExclusive, alarmHours = 9 }) {
+      // all-day: DTEND is exclusive
+      return [
+        "BEGIN:VEVENT",
+        `UID:${uid}`,
+        `DTSTAMP:${icsStamp()}`,
+        `DTSTART;VALUE=DATE:${icsDay(startIso)}`,
+        `DTEND;VALUE=DATE:${icsDay(endIsoExclusive)}`,
+        `SUMMARY:${icsEscape(title)}`,
+        `DESCRIPTION:${icsEscape(description || "")}`,
+        "BEGIN:VALARM",
+        "ACTION:DISPLAY",
+        `DESCRIPTION:${icsEscape(title)}`,
+        `TRIGGER:-PT${alarmHours}H`,
+        "END:VALARM",
+        "END:VEVENT"
+      ].join("\r\n");
+    }
+
+    function collectIcsEvents(mode = "all") {
+      const events = [];
+      let n = 0;
+      const pushRange = (title, description, datesSet) => {
+        const dates = [...datesSet].sort();
+        if (!dates.length) return;
+        // merge contiguous ranges
+        let start = dates[0];
+        let prev = dates[0];
+        const flush = (from, to) => {
+          n += 1;
+          events.push(makeIcsEvent({
+            uid: `ori-family-${n}-${from}@ori-summary.local`,
+            title,
+            description,
+            startIso: from,
+            endIsoExclusive: nextDayIso(to)
+          }));
+        };
+        for (let i = 1; i < dates.length; i++) {
+          if (dates[i] === nextDayIso(prev)) {
+            prev = dates[i];
+          } else {
+            flush(start, prev);
+            start = dates[i];
+            prev = dates[i];
+          }
+        }
+        flush(start, prev);
+      };
+
+      if (mode === "both" || mode === "all") {
+        const both = new Set();
+        for (const iso of oriOffMap.keys()) {
+          if (laniOffMap.has(iso)) both.add(iso);
+        }
+        pushRange("⚠️ אורי + לני בחופשה", "יום שבו גם אורי וגם לני בחופשה", both);
+      }
+
+      if (mode === "all") {
+        pushRange("חופשת אורי", "חופשה / אין פעילות — אורי", new Set(oriOffMap.keys()));
+        pushRange("קייטנת אורי", "קייטנה — אורי", new Set(oriCampMap.keys()));
+        pushRange("חופשת לני", "חופשה — לני", new Set(laniOffMap.keys()));
+        pushRange("יול״א — לני", "פעילות יול״א", new Set(laniYelaMap.keys()));
+        customCalEvents.forEach(ev => {
+          n += 1;
+          const end = ev.end || ev.start;
+          events.push(makeIcsEvent({
+            uid: `ori-custom-${ev.id}@ori-summary.local`,
+            title: ev.title,
+            description: `אירוע משפחתי · ${whoLabel(ev.who)}`,
+            startIso: ev.start,
+            endIsoExclusive: nextDayIso(end)
+          }));
+        });
+      }
+      return events;
+    }
+
+    function downloadIcs(filename, events) {
+      if (!events.length) {
+        alert("אין אירועים לייצוא");
+        return;
+      }
+      const body = [
+        "BEGIN:VCALENDAR",
+        "VERSION:2.0",
+        "PRODID:-//Ori Summary//Family Calendar//HE",
+        "CALSCALE:GREGORIAN",
+        "METHOD:PUBLISH",
+        ...events,
+        "END:VCALENDAR"
+      ].join("\r\n");
+      const blob = new Blob([body], { type: "text/calendar;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1500);
+    }
+
+    document.getElementById("cal-prev")?.addEventListener("click", () => shiftCalMonth(-1));
+    document.getElementById("cal-next")?.addEventListener("click", () => shiftCalMonth(1));
+
+    document.getElementById("cal-export-ics")?.addEventListener("click", () => {
+      downloadIcs("ori-lani-calendar.ics", collectIcsEvents("all"));
+    });
+    document.getElementById("cal-export-both")?.addEventListener("click", () => {
+      downloadIcs("ori-lani-both-off.ics", collectIcsEvents("both"));
+    });
+
+    document.getElementById("cal-add-form")?.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const title = document.getElementById("cal-ev-title").value.trim();
+      const start = document.getElementById("cal-ev-start").value;
+      let end = document.getElementById("cal-ev-end").value || start;
+      const who = document.getElementById("cal-ev-who").value || "family";
+      if (!title || !start) return;
+      if (end < start) end = start;
+      customCalEvents.push({
+        id: "c" + Date.now().toString(36),
+        title,
+        start,
+        end,
+        who
+      });
+      saveCustomCalEvents();
+      e.target.reset();
+      document.getElementById("cal-ev-start").value = start;
+      // jump calendar to event month
+      const [y, m] = start.split("-").map(Number);
+      if (y && m) { calYear = y; calMonth = m; }
+      renderFamilyCalendar();
+    });
+
+    document.getElementById("cal-custom-list")?.addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-del-cal]");
+      if (!btn) return;
+      const id = btn.getAttribute("data-del-cal");
+      customCalEvents = customCalEvents.filter(ev => ev.id !== id);
+      saveCustomCalEvents();
+      renderFamilyCalendar();
+    });
+
+    document.getElementById("cal-grid")?.addEventListener("click", (e) => {
+      const cell = e.target.closest(".cal-cell[data-iso]");
+      if (!cell || cell.classList.contains("out")) return;
+      const iso = cell.getAttribute("data-iso");
+      if (!iso) return;
+      document.getElementById("cal-ev-start").value = iso;
+      document.getElementById("cal-ev-end").value = iso;
+      document.getElementById("cal-ev-title")?.focus();
+    });
+
+    // default dates in add form
+    (() => {
+      const start = document.getElementById("cal-ev-start");
+      if (start && !start.value) {
+        const t = new Date();
+        start.value = isoKey(t.getFullYear(), t.getMonth() + 1, t.getDate());
+      }
+    })();
+
+    renderSchedule();
+    renderHolidays();
+    renderFamilyCalendar();
+
+    loadData().then(() => {
+      if (!alerts.length) updateAlertCounters();
+      initDayPicker();
+    });
+  </script>
+</body>
+</html>
+

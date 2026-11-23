@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: ori-school-family
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: APP_USER
+        sync: false
+      - key: APP_PASSWORD
+        sync: false
+      - key: WEBTOP_USERNAME
+        sync: false
+      - key: WEBTOP_PASSWORD
+        sync: false
+      - key: WEBTOP_STATE_B64
+        sync: false
