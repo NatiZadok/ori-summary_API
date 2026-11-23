@@ -2,12 +2,14 @@
 config.json
 webtop_state.json
 webtop_state.b64.txt
+webtop_token.txt
 .webtop-chrome-profile/
 .webtop-manual-profile/
 .env
 *.pem
 empty_scrape_debug.png
 debug_*.png
+api_samples.json
 
 # Python
 __pycache__/

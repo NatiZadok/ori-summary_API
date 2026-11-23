@@ -1,45 +1,40 @@
-# סיכום אורי — בית ספר ומשפחה
+# ori-summary_API — סיכום אורי דרך Webtop API
 
-דף סיכום לאורי (כיתה ב׳) עם שיעורי בית, התראות, הודעות, מערכת שעות, חופשות ולוח משפחתי.
+עותק של פרויקט הסיכום המשפחתי, עם **איסוף נתונים ב־HTTP API**  
+(`webtopserver.smartschool.co.il`) במקום סריקת דפדפן (Playwright).
+
+## מה השתנה לעומת ori-summary
+
+| לפני | עכשיו |
+|------|--------|
+| Playwright + CAPTCHA | `webToken` + קריאות API |
+| `update_webtop.py` | `update_data.py` |
+| Docker Playwright | Python slim |
 
 ## הפעלה מקומית
 
-1. `config.json` עם משתמש/סיסמה ל־Webtop (או העתקה מ־`config.example.json`)
-2. התקנה:
-   ```bash
-   pip install -r requirements.txt
-   playwright install chromium
-   ```
-3. `הפעל-סיכום.bat` → http://127.0.0.1:8765/
+1. שימי `webToken` באחד מאלה:
+   - משתנה סביבה `WEBTOP_TOKEN`
+   - קובץ `webtop_token.txt`
+   - `config.json` עם `"token": "..."`
+   - או `webtop_state.json` שמכיל cookie בשם `webToken` + `python save_token_from_state.py`
+2. `הפעל-סיכום.bat` → http://127.0.0.1:8765/
+3. **עדכן עכשיו**
 
-## Render — הכל בענן (בלי להשאיר מחשב דלוק)
+איך להשיג token: התחברי ל־Webtop בדפדפן → DevTools → Application → Cookies → `webToken` → העתיקי.
 
-### Environment
-| משתנה | חובה | תפקיד |
-|--------|------|--------|
-| `APP_USER` / `APP_PASSWORD` | מומלץ | סיסמת כניסה לדף המשפחתי |
-| `WEBTOP_USERNAME` / `WEBTOP_PASSWORD` | כן* | התחברות ל־Webtop |
-| `WEBTOP_STATE_JSON` | מומלץ מאוד | סשן שמור אחרי התחברות מקומית |
+## Render
 
-\* או `config.json` בריפו (פחות מומלץ אם הריפו ציבורי).
+| משתנה | תפקיד |
+|--------|--------|
+| `APP_USER` / `APP_PASSWORD` | Basic Auth לדף |
+| `WEBTOP_TOKEN` | **מומלץ** — עוגיית webToken |
+| `WEBTOP_STATE_B64` | חלופה — storage עם webToken |
 
-### Deploy מומלץ: Docker (Playwright עובד יציב)
-ב־Render → Settings → **Language / Runtime** בחרי **Docker** (משתמש ב־`Dockerfile` שבריפו).
-
-אם נשארים ב־Native Python:
-- **Build Command:** `pip install -r requirements.txt && playwright install chromium`
-- **Start Command:** `python server.py`
-
-### איך לחבר סשן (חשוב ל־Cloudflare)
-1. במחשב: הריצי עדכון מקומי מוצלח פעם אחת (`הפעל-סיכום.bat` → עדכן עכשיו).
-2. פתחי את `webtop_state.json` שהנוצר, העתיקי **את כל התוכן**.
-3. ב־Render → Environment → הוסיפי `WEBTOP_STATE_JSON` = התוכן המלא.
-4. Deploy מחדש → בקישור של Render לחצי **עדכן עכשיו**.
-
-כשהסשן תקף — העדכון רץ לגמרי בענן.  
-כש־Cloudflare מבטל את הסשן — צריך לרענן את `WEBTOP_STATE_JSON` שוב (פעם בכמה שבועות / כשעדכון נכשל).
+Runtime: **Docker** (`Dockerfile` רגיל, בלי Playwright).
 
 ## הערות
 
-- חתימות בחלון דפדפן נשארות מקומיות בלבד.
-- אל תחשפי סיסמאות בריפו ציבורי — העדיפי Environment ב־Render + Private repo.
+- התחברות מאפס עדיין דורשת CAPTCHA ב־Webtop — לכן משתמשים ב־token קיים.
+- Token רגיל נמשך שעות; עם remember-me / bio יכול להחזיק הרבה יותר.
+- חתימות בחלון דפדפן לא חלק מזרימת ה־API (placeholder בדשבורד).

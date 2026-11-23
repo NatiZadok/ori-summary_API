@@ -1,13 +1,10 @@
 # -*- coding: utf-8 -*-
-"""Family dashboard server — local + fully cloud (Render) updates.
+"""Family dashboard server — local + cloud (Render) updates via Webtop HTTP API.
 
 Render Environment (מומלץ):
-  APP_USER / APP_PASSWORD     — Basic Auth לדף
-  WEBTOP_USERNAME / WEBTOP_PASSWORD — התחברות Webtop (או config.json בריפו)
-  WEBTOP_STATE_JSON            — תוכן webtop_state.json אחרי התחברות מקומית מוצלחת
-
-Build Command ב־Render:
-  pip install -r requirements.txt && playwright install chromium
+  APP_USER / APP_PASSWORD  — Basic Auth לדף
+  WEBTOP_TOKEN             — ערך עוגיית webToken (מומלץ)
+  WEBTOP_STATE_B64         — חלופה: Playwright storage עם cookie webToken
 """
 from __future__ import annotations
 
@@ -132,12 +129,12 @@ class Handler(SimpleHTTPRequestHandler):
             return
         try:
             where = "בענן (Render)" if ON_RENDER else "מקומית"
-            send("start", {"message": f"מתחיל עדכון מ־Webtop {where}"})
+            send("start", {"message": f"מתחיל עדכון מ־Webtop API {where}"})
             env = os.environ.copy()
             if ON_RENDER:
                 env["WEBTOP_CLOUD"] = "1"
             proc = subprocess.Popen(
-                [sys.executable, str(ROOT / "update_webtop.py")],
+                [sys.executable, str(ROOT / "update_data.py")],
                 cwd=str(ROOT),
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT,
@@ -171,7 +168,7 @@ class Handler(SimpleHTTPRequestHandler):
                         "ok": False,
                         "message": (
                             f"העדכון נכשל (קוד {proc.returncode}). "
-                            "אם זו חסימת Cloudflare — רענני סשן מקומי והעלי מחדש WEBTOP_STATE_B64."
+                            "בדקי ש־WEBTOP_TOKEN תקף (או WEBTOP_STATE_B64 עם webToken)."
                         ),
                     },
                 )
