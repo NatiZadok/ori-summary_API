@@ -13,6 +13,7 @@ import binascii
 import hmac
 import json
 import os
+import re
 import subprocess
 import sys
 import threading
@@ -27,6 +28,48 @@ HOST = "0.0.0.0" if ON_RENDER else "127.0.0.1"
 APP_USER = os.environ.get("APP_USER", "")
 APP_PASSWORD = os.environ.get("APP_PASSWORD", "")
 _update_lock = threading.Lock()
+
+_REDACT_PATTERNS = (
+    (re.compile(r"(?i)(Bearer\s+)\S+"), r"\1[REDACTED]"),
+    (re.compile(r"(?i)(webToken=)\S+"), r"\1[REDACTED]"),
+    (re.compile(r"(?i)\b(W_T_)[A-Za-z0-9+/=_\-]{12,}"), r"\1[REDACTED]"),
+    (
+        re.compile(
+            r'(?i)("?(?:token|bioLogin|password|Authorization|Cookie)"?\s*[:=]\s*)"[^"]*"'
+        ),
+        r'\1"[REDACTED]"',
+    ),
+    (re.compile(r"(?i)\bprefix=[^\s]+"), "prefix=[REDACTED]"),
+)
+
+
+def _sanitize_secret_text(text: str) -> str:
+    out = text
+    for pattern, repl in _REDACT_PATTERNS:
+        out = pattern.sub(repl, out)
+    return out
+
+
+def _sanitize_for_render_log(line: str) -> str:
+    """Safe line for Render logs — no tokens/cookies/credentials/student detail."""
+    if line.startswith("STEP "):
+        try:
+            obj = json.loads(line[5:])
+            return (
+                f"STEP n={obj.get('n')}/{obj.get('total')} "
+                f"title={obj.get('title')!r} status={obj.get('status')!r}"
+            )
+        except (TypeError, ValueError):
+            return "STEP [unparsed]"
+    if line.startswith("DONE "):
+        try:
+            obj = json.loads(line[5:])
+            msg = _sanitize_secret_text(str(obj.get("message") or ""))
+            return f"DONE ok={obj.get('ok')} message={msg}"
+        except (TypeError, ValueError):
+            return "DONE [unparsed]"
+    return _sanitize_secret_text(line)
+
 
 if (APP_USER and not APP_PASSWORD) or (APP_PASSWORD and not APP_USER):
     raise SystemExit("Set both APP_USER and APP_PASSWORD, or neither for local use.")
@@ -176,6 +219,8 @@ class Handler(SimpleHTTPRequestHandler):
                 line = line.strip()
                 if not line:
                     continue
+                # Render Logs: sanitized copy (SSE to UI stays unchanged)
+                print(f"[update] {_sanitize_for_render_log(line)}", flush=True)
                 try:
                     if line.startswith("STEP "):
                         send("step", json.loads(line[5:]))
@@ -187,6 +232,10 @@ class Handler(SimpleHTTPRequestHandler):
                 except (ValueError, BrokenPipeError, ConnectionResetError):
                     break
             proc.wait()
+            print(
+                f"[update] subprocess exit_code={proc.returncode} got_done={got_done}",
+                flush=True,
+            )
             # אל תדרסי הודעת DONE אמיתית (למשל סריקה ריקה) בהודעת Cloudflare גנרית
             if proc.returncode != 0 and not got_done:
                 send(
