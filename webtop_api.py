@@ -2,9 +2,12 @@
 """Webtop SmartSchool HTTP API client (no Playwright / no browser scrape)."""
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 import re
+import ssl
+import sys
 from pathlib import Path
 from typing import Any
 from urllib.error import HTTPError, URLError
@@ -175,19 +178,68 @@ def _body_kind(content_type: str, text: str) -> str:
     return "other"
 
 
+def _token_fingerprint(token: str) -> str:
+    """SHA-256 of token value — comparable across hosts, not reversible to secret."""
+    if not token:
+        return "(empty)"
+    return hashlib.sha256(token.encode("utf-8")).hexdigest()
+
+
+def _env_configured(*names: str) -> bool:
+    for name in names:
+        if (os.environ.get(name) or "").strip():
+            return True
+    return False
+
+
+def _proxy_flags() -> dict[str, bool]:
+    """Whether proxy-related env vars are set — never logs URLs or credentials."""
+    return {
+        "http_proxy": _env_configured("HTTP_PROXY", "http_proxy"),
+        "https_proxy": _env_configured("HTTPS_PROXY", "https_proxy"),
+        "all_proxy": _env_configured("ALL_PROXY", "all_proxy"),
+        "no_proxy": _env_configured("NO_PROXY", "no_proxy"),
+    }
+
+
+def _log_connectivity_diagnostics(*, api_base: str, token: str) -> None:
+    """Compare local vs Render runtime — no secrets, no auth/header changes."""
+    proxies = _proxy_flags()
+    print(
+        "CONNECTIVITY diag "
+        f"python={sys.version.split()[0]!r} "
+        f"openssl={ssl.OPENSSL_VERSION!r} "
+        f"api_base={api_base!r} "
+        f"http_proxy_configured={proxies['http_proxy']} "
+        f"https_proxy_configured={proxies['https_proxy']} "
+        f"all_proxy_configured={proxies['all_proxy']} "
+        f"no_proxy_configured={proxies['no_proxy']} "
+        f"token_sha256={_token_fingerprint(token)} "
+        f"token_len={len(token)} "
+        f"cloud={ON_CLOUD} "
+        f"platform={sys.platform!r}",
+        flush=True,
+    )
+
+
 def _log_http_diagnostics(
     endpoint: str,
     status: int | None,
     headers: Any,
     body_text: str = "",
 ) -> None:
-    """Safe HTTP diagnostics for Render — never logs body/token/cookie contents."""
+    """Safe HTTP diagnostics — never logs body/token/cookie contents."""
     content_type = _header_get(headers, "Content-Type")
     print(
         "HTTP diag "
         f"endpoint={endpoint} "
         f"status={status} "
         f"server={_header_get(headers, 'Server')!r} "
+        f"via={_header_get(headers, 'Via')!r} "
+        f"x-cache={_header_get(headers, 'X-Cache')!r} "
+        f"x-amz-cf-id={_header_get(headers, 'X-Amz-Cf-Id')!r} "
+        f"x-amz-cf-pop={_header_get(headers, 'X-Amz-Cf-Pop')!r} "
+        f"age={_header_get(headers, 'Age')!r} "
         f"cf-ray={_header_get(headers, 'CF-RAY')!r} "
         f"cf-mitigated={_header_get(headers, 'CF-Mitigated')!r} "
         f"content-type={content_type!r} "
@@ -332,6 +384,7 @@ class WebtopApi:
         self._last_auth_error = ""
         has_token = bool(self.token)
         has_bio = bool(load_bio())
+        _log_connectivity_diagnostics(api_base=self.api_base, token=self.token)
         print(
             f"AUTH start has_token={has_token} token_len={len(self.token)} "
             f"has_bio={has_bio} cloud={ON_CLOUD}",
