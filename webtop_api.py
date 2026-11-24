@@ -245,8 +245,10 @@ class WebtopApi:
         """Prefer live token; otherwise renew automatically via bio."""
         self._last_auth_error = ""
         has_token = bool(self.token)
+        prefix = (self.token[:8] + "…") if self.token else "(empty)"
         print(
-            f"AUTH start token_len={len(self.token)} bio={bool(load_bio())} cloud={ON_CLOUD}",
+            f"AUTH start token_len={len(self.token)} prefix={prefix} "
+            f"bio={bool(load_bio())} cloud={ON_CLOUD}",
             flush=True,
         )
         if self.check_token():
@@ -255,6 +257,14 @@ class WebtopApi:
             except WebtopApiError:
                 pass
             return
+        # Fallback probe — sometimes CheckToken is flaky but dashboard works
+        try:
+            self.init_dashboard()
+            print("AUTH CheckToken failed but InitDashboard OK — continuing", flush=True)
+            return
+        except WebtopApiError as exc:
+            self._last_auth_error = self._last_auth_error or str(exc)
+
         print("AUTH token missing/expired — trying bio auto-renew…", flush=True)
         if self.renew_via_bio():
             return
@@ -265,8 +275,10 @@ class WebtopApi:
                 "העתיקי מ־webtop_token.txt במחשב ל־Environment → WEBTOP_TOKEN → Save."
             )
         raise WebtopApiError(
-            f"הטוקן/bio לא עובדים מול Webtop מהשרת. פרט: {detail}. "
-            "בדקי ש־WEBTOP_TOKEN נשמר ב־Render אחרי Save/Redeploy."
+            f"הטוקן קיים אבל Webtop דוחה מהענן (len={len(self.token)} prefix={prefix}). "
+            f"פרט: {detail}. "
+            "לחצי Eye ליד WEBTOP_TOKEN וודאי שהערך המלא מתחיל ב־W_T_ "
+            "ואין גרשיים סביבו; אחר כך Manual Deploy."
         )
 
     def init_dashboard(self) -> dict:
