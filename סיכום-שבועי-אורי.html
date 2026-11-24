@@ -1702,6 +1702,7 @@
           </div>
           <div class="hero-update-block">
             <button type="button" class="update-btn" id="update-btn">🔄 עדכן עכשיו</button>
+            <button type="button" class="update-btn" id="token-btn" style="background:#5b6ee1;margin-top:0.4rem">🔑 רענון טוקן</button>
             <span class="chip updated-chip" id="chip-updated">⏱️ טרם עודכן מהשרת</span>
           </div>
         </div>
@@ -2949,6 +2950,16 @@
     });
 
     document.getElementById("update-btn").addEventListener("click", runUpdate);
+    document.getElementById("token-btn")?.addEventListener("click", async () => {
+      const apiBase = location.protocol === "file:" ? "http://127.0.0.1:8765" : "";
+      try {
+        const res = await fetch(apiBase + "/api/refresh-token");
+        const j = await res.json();
+        alert(j.message || (j.ok ? "נפתח חלון לרענון טוקן" : "לא ניתן לרענן טוקן"));
+      } catch (err) {
+        alert("רענון טוקן זמין רק מקומית (הפעל-סיכום.bat). או הריצי רענון-טוקן.bat");
+      }
+    });
     document.getElementById("close-progress").addEventListener("click", () => {
       document.getElementById("progress-overlay").classList.remove("open");
     });

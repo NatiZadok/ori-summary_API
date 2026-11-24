@@ -5,6 +5,7 @@ webtop_state.b64.txt
 webtop_token.txt
 .webtop-chrome-profile/
 .webtop-manual-profile/
+.webtop-token-profile/
 .env
 *.pem
 empty_scrape_debug.png

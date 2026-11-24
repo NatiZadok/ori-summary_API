@@ -68,14 +68,21 @@ def bootstrap_token_from_env() -> None:
 bootstrap_token_from_env()
 
 
+def _clean_token(value: str) -> str:
+    t = (value or "").strip().strip('"').strip("'").replace("\r", "").replace("\n", "")
+    if "%" in t:
+        t = unquote(t)
+    return t.strip()
+
+
 def extract_web_token() -> str:
-    env = (os.environ.get("WEBTOP_TOKEN") or CONFIG.get("token") or "").strip()
+    env = _clean_token(os.environ.get("WEBTOP_TOKEN") or CONFIG.get("token") or "")
     if env:
-        return unquote(env) if "%" in env else env
+        return env
     if TOKEN_FILE.exists():
-        t = TOKEN_FILE.read_text(encoding="utf-8").strip()
+        t = _clean_token(TOKEN_FILE.read_text(encoding="utf-8"))
         if t:
-            return unquote(t) if "%" in t else t
+            return t
     if STATE_FILE.exists():
         try:
             data = json.loads(STATE_FILE.read_text(encoding="utf-8"))
@@ -91,7 +98,7 @@ def extract_web_token() -> str:
 
 
 def save_token(token: str) -> None:
-    TOKEN_FILE.write_text(token.strip(), encoding="utf-8")
+    TOKEN_FILE.write_text(_clean_token(token), encoding="utf-8")
     print("TOKEN saved webtop_token.txt", flush=True)
 
 

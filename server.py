@@ -97,6 +97,17 @@ class Handler(SimpleHTTPRequestHandler):
                 )
             return self._open_signatures()
 
+        if path == "/api/refresh-token":
+            if ON_RENDER:
+                return self._json(
+                    503,
+                    {
+                        "ok": False,
+                        "message": "רענון טוקן אפשרי רק במחשב הבית (Chrome + CAPTCHA).",
+                    },
+                )
+            return self._refresh_token()
+
         if path == "/":
             self.path = "/סיכום-שבועי-אורי.html"
         elif path not in ("/סיכום-שבועי-אורי.html", "/data.json"):
@@ -105,12 +116,28 @@ class Handler(SimpleHTTPRequestHandler):
 
     def _open_signatures(self):
         subprocess.Popen(
-            [sys.executable, str(ROOT / "open_signatures.py")],
+            [sys.executable, str(ROOT / "get_webtop_token.py")],
             cwd=str(ROOT),
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
         )
-        self._json(200, {"ok": True, "message": "פותח את Webtop במחשב המקומי."})
+        self._json(200, {"ok": True, "message": "פותח Chrome לרענון טוקן."})
+
+    def _refresh_token(self):
+        subprocess.Popen(
+            [sys.executable, str(ROOT / "get_webtop_token.py")],
+            cwd=str(ROOT),
+        )
+        self._json(
+            200,
+            {
+                "ok": True,
+                "message": (
+                    "נפתח Chrome לרענון טוקן. אחרי כניסה הטוקן יועתק ללוח — "
+                    "הדביקי ב־Render ל־WEBTOP_TOKEN."
+                ),
+            },
+        )
 
     def _stream_update(self):
         self.send_response(200)

@@ -13,15 +13,11 @@
 
 ## הפעלה מקומית
 
-1. שימי `webToken` באחד מאלה:
-   - משתנה סביבה `WEBTOP_TOKEN`
-   - קובץ `webtop_token.txt`
-   - `config.json` עם `"token": "..."`
-   - או `webtop_state.json` שמכיל cookie בשם `webToken` + `python save_token_from_state.py`
+1. `רענון-טוקן.bat` (או בדף: **רענון טוקן**) — Chrome + CAPTCHA פעם אחת; הטוקן נשמר ומועתק ללוח
 2. `הפעל-סיכום.bat` → http://127.0.0.1:8765/
 3. **עדכן עכשיו**
 
-איך להשיג token: התחברי ל־Webtop בדפדפן → DevTools → Application → Cookies → `webToken` → העתיקי.
+אפשר גם ידנית: DevTools → Cookies → `webToken`, או קובץ `webtop_token.txt`.
 
 ## Render
 
