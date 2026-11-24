@@ -274,11 +274,15 @@ class WebtopApi:
                 "ב־Render חסר WEBTOP_TOKEN (או WEBTOP_BIO_JSON). "
                 "העתיקי מ־webtop_token.txt במחשב ל־Environment → WEBTOP_TOKEN → Save."
             )
+        if "403" in detail:
+            raise WebtopApiError(
+                "Webtop חוסם את שרתי Render (HTTP 403) — הטוקן תקין, אבל מהענן אי אפשר. "
+                "עדכון חי: הפעילי את הסיכום במחשב הבית, או הגדירי HOME_UPDATE_URL. "
+                f"(פרט: {detail})"
+            )
         raise WebtopApiError(
             f"הטוקן קיים אבל Webtop דוחה מהענן (len={len(self.token)} prefix={prefix}). "
-            f"פרט: {detail}. "
-            "לחצי Eye ליד WEBTOP_TOKEN וודאי שהערך המלא מתחיל ב־W_T_ "
-            "ואין גרשיים סביבו; אחר כך Manual Deploy."
+            f"פרט: {detail}."
         )
 
     def init_dashboard(self) -> dict:
