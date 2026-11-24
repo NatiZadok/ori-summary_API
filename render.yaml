@@ -9,6 +9,8 @@ services:
         sync: false
       - key: APP_PASSWORD
         sync: false
+      - key: WEBTOP_BIO_JSON
+        sync: false
       - key: WEBTOP_TOKEN
         sync: false
       - key: WEBTOP_STATE_B64

@@ -13,6 +13,7 @@ from urllib.request import Request, urlopen
 ROOT = Path(__file__).resolve().parent
 STATE_FILE = ROOT / "webtop_state.json"
 TOKEN_FILE = ROOT / "webtop_token.txt"
+BIO_FILE = ROOT / "bio_credentials.json"
 API_BASE = "https://webtopserver.smartschool.co.il/server/api"
 WEB_ORIGIN = "https://webtop.smartschool.co.il"
 ON_CLOUD = bool(os.environ.get("RENDER") or os.environ.get("WEBTOP_CLOUD") == "1")
@@ -41,14 +42,23 @@ CONFIG = _load_config()
 
 
 def bootstrap_token_from_env() -> None:
-    """Prefer WEBTOP_TOKEN; else WEBTOP_STATE_B64 / webtop_state.json cookie webToken."""
+    """Load token/bio/state from Render env into local files."""
     import base64
 
-    tok = os.environ.get("WEBTOP_TOKEN", "").strip()
+    bio = os.environ.get("WEBTOP_BIO_JSON", "").strip()
+    if bio:
+        try:
+            data = json.loads(bio)
+            if isinstance(data, dict) and data.get("bioLogin"):
+                BIO_FILE.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+                print("BOOTSTRAP bio from WEBTOP_BIO_JSON", flush=True)
+        except Exception as exc:
+            print(f"BOOTSTRAP bio invalid: {exc}", flush=True)
+
+    tok = _clean_token(os.environ.get("WEBTOP_TOKEN", ""))
     if tok:
         TOKEN_FILE.write_text(tok, encoding="utf-8")
         print("BOOTSTRAP token from WEBTOP_TOKEN", flush=True)
-        return
 
     b64 = os.environ.get("WEBTOP_STATE_B64", "").strip()
     raw = os.environ.get("WEBTOP_STATE_JSON", "").strip()
@@ -65,14 +75,14 @@ def bootstrap_token_from_env() -> None:
         print(f"BOOTSTRAP state env invalid: {exc}", flush=True)
 
 
-bootstrap_token_from_env()
-
-
 def _clean_token(value: str) -> str:
     t = (value or "").strip().strip('"').strip("'").replace("\r", "").replace("\n", "")
     if "%" in t:
         t = unquote(t)
     return t.strip()
+
+
+bootstrap_token_from_env()
 
 
 def extract_web_token() -> str:
@@ -102,6 +112,30 @@ def save_token(token: str) -> None:
     print("TOKEN saved webtop_token.txt", flush=True)
 
 
+def load_bio() -> dict | None:
+    raw = os.environ.get("WEBTOP_BIO_JSON", "").strip()
+    if raw:
+        try:
+            data = json.loads(raw)
+            if isinstance(data, dict) and data.get("bioLogin"):
+                return data
+        except Exception:
+            pass
+    if BIO_FILE.exists():
+        try:
+            data = json.loads(BIO_FILE.read_text(encoding="utf-8"))
+            if isinstance(data, dict) and data.get("bioLogin"):
+                return data
+        except Exception:
+            pass
+    return None
+
+
+def save_bio(data: dict) -> None:
+    BIO_FILE.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+    print("BIO saved bio_credentials.json", flush=True)
+
+
 class WebtopApiError(RuntimeError):
     def __init__(self, message: str, *, status: int | None = None, payload: Any = None):
         super().__init__(message)
@@ -111,13 +145,19 @@ class WebtopApiError(RuntimeError):
 
 class WebtopApi:
     def __init__(self, token: str | None = None, *, api_base: str | None = None):
-        self.token = (token or extract_web_token()).strip()
+        if token is not None:
+            self.token = _clean_token(token)
+        else:
+            try:
+                self.token = extract_web_token()
+            except RuntimeError:
+                self.token = ""
         self.api_base = (api_base or CONFIG.get("api_base") or API_BASE).rstrip("/")
         self.child: dict[str, Any] | None = None
         self.study_year: int | None = None
 
     def _headers(self) -> dict[str, str]:
-        return {
+        headers = {
             "Content-Type": "application/json; charset=utf-8",
             "Accept": "application/json, text/plain, */*",
             "language": "he",
@@ -128,9 +168,11 @@ class WebtopApi:
                 "AppleWebKit/537.36 (KHTML, like Gecko) "
                 "Chrome/120.0.0.0 Safari/537.36"
             ),
-            "Cookie": f"webToken={self.token}",
-            "Authorization": f"Bearer {self.token}",
         }
+        if self.token:
+            headers["Cookie"] = f"webToken={self.token}"
+            headers["Authorization"] = f"Bearer {self.token}"
+        return headers
 
     def post(self, path: str, body: Any = None) -> Any:
         url = path if path.startswith("http") else f"{self.api_base}/{path.lstrip('/')}"
@@ -158,11 +200,60 @@ class WebtopApi:
         return data
 
     def check_token(self) -> bool:
+        if not self.token:
+            return False
         try:
             self.post("dashboard/CheckToken", {})
             return True
         except WebtopApiError:
             return False
+
+    def renew_via_bio(self) -> bool:
+        """Mint a fresh webToken from bioLogin — no CAPTCHA."""
+        bio = load_bio()
+        if not bio:
+            return False
+        body = {
+            "id": bio["bioLogin"],
+            "param1": str(bio.get("mode", "2")),
+            "param2": bio.get("deviceId") or "",
+            "param3": bio.get("selectedUser") or "",
+            "param4": bio.get("uniqueId") or "",
+            "param5": str(bool(bio.get("isMobile", True))).lower(),
+        }
+        try:
+            data = self.post("user/loginByBio", body)
+        except WebtopApiError as exc:
+            print(f"BIO renew failed: {exc}", flush=True)
+            return False
+        if not isinstance(data, dict):
+            return False
+        token = data.get("token") or data.get("Token")
+        if not token:
+            print(f"BIO renew: no token in response keys={list(data)}", flush=True)
+            return False
+        self.token = _clean_token(token)
+        save_token(self.token)
+        print("BIO renew OK — fresh webToken", flush=True)
+        return self.check_token()
+
+    def ensure_auth(self) -> None:
+        """Prefer live token; otherwise renew automatically via bio."""
+        if self.check_token():
+            # Keep session warm when possible
+            try:
+                self.post("dashboard/CheckBackgroundToken", {})
+            except WebtopApiError:
+                pass
+            return
+        print("AUTH token missing/expired — trying bio auto-renew…", flush=True)
+        if self.renew_via_bio():
+            return
+        raise WebtopApiError(
+            "אין webToken תקף ואין bio אוטומטי. "
+            "הריצי פעם אחת רענון-טוקן.bat (שומר גם bio), "
+            "ואז שימי WEBTOP_BIO_JSON ב־Render."
+        )
 
     def init_dashboard(self) -> dict:
         return self.post("dashboard/InitDashboard", {}) or {}

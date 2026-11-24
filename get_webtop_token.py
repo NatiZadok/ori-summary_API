@@ -1,14 +1,16 @@
 # -*- coding: utf-8 -*-
 """
-One-time local tool: open real Chrome, login to Webtop (with Remember me),
-save webToken to webtop_token.txt and copy it to the clipboard for Render.
+One-time local setup:
+1) Login in Chrome (CAPTCHA once)
+2) Save webToken + bioLogin (for ~1 year auto-renew, no more clicks)
+3) Copy WEBTOP_BIO_JSON to clipboard for Render
 """
 from __future__ import annotations
 
+import json
 import os
 import socket
 import subprocess
-import sys
 import time
 from pathlib import Path
 
@@ -63,8 +65,6 @@ def _load_credentials() -> tuple[str, str]:
     cfg = ROOT / "config.json"
     if cfg.exists():
         try:
-            import json
-
             data = json.loads(cfg.read_text(encoding="utf-8"))
             user = user or data.get("username") or ""
             password = password or data.get("password") or ""
@@ -80,14 +80,14 @@ def main() -> int:
         print("חסר Playwright. הריצי: pip install playwright && playwright install chromium", flush=True)
         return 1
 
-    from webtop_api import WebtopApi, save_token
+    from webtop_api import WebtopApi, save_bio, save_token
 
-    print("=" * 52, flush=True)
-    print("ייצור / רענון WEBTOP_TOKEN (Remember me)", flush=True)
-    print("1) ייפתח Chrome", flush=True)
-    print("2) אם CAPTCHA — סמני ידנית ואז «כניסה»", flush=True)
-    print("3) אחרי כניסה הטוקן יישמר ויועתק ללוח", flush=True)
-    print("=" * 52, flush=True)
+    print("=" * 56, flush=True)
+    print("הגדרה חד־פעמית לחידוש אוטומטי (בלי לחיצות אחר כך)", flush=True)
+    print("1) Chrome + CAPTCHA + כניסה — פעם אחת", flush=True)
+    print("2) נשמר bio (~שנה) + טוקן", flush=True)
+    print("3) מועתק ללוח: WEBTOP_BIO_JSON ל־Render", flush=True)
+    print("=" * 56, flush=True)
 
     PROFILE.mkdir(exist_ok=True)
     chrome = _find_chrome()
@@ -115,13 +115,39 @@ def main() -> int:
         return 1
 
     user, password = _load_credentials()
+    captured_bio: dict = {}
 
     with sync_playwright() as p:
         browser = p.chromium.connect_over_cdp(f"http://127.0.0.1:{DEBUG_PORT}")
         context = browser.contexts[0] if browser.contexts else browser.new_context()
         page = context.pages[0] if context.pages else context.new_page()
 
-        # Remember me לפני login — מאריך תוקף הטוקן
+        def on_request(req):
+            try:
+                if "loginByBio" not in (req.url or ""):
+                    return
+                raw = req.post_data
+                if not raw:
+                    return
+                body = json.loads(raw)
+                if body.get("id"):
+                    captured_bio.clear()
+                    captured_bio.update(
+                        {
+                            "bioLogin": body.get("id"),
+                            "deviceId": body.get("param2") or "",
+                            "selectedUser": body.get("param3") or "",
+                            "uniqueId": body.get("param4") or "",
+                            "isMobile": str(body.get("param5", "true")).lower() == "true",
+                            "mode": str(body.get("param1", "2")),
+                        }
+                    )
+                    print("BIO captured from loginByBio", flush=True)
+            except Exception:
+                pass
+
+        page.on("request", on_request)
+
         try:
             context.add_cookies(
                 [
@@ -136,9 +162,7 @@ def main() -> int:
         except Exception:
             pass
 
-        if "login" not in (page.url or ""):
-            page.goto(LOGIN_URL, wait_until="domcontentloaded", timeout=60000)
-
+        page.goto(LOGIN_URL, wait_until="domcontentloaded", timeout=60000)
         try:
             page.locator("button:has-text('אשר cookies')").click(timeout=2500)
         except Exception:
@@ -167,7 +191,6 @@ def main() -> int:
                         break
                 if token:
                     break
-            # Turnstile failed → reload once in a while
             try:
                 if page.get_by_text("האימות נכשל", exact=False).count() > 0:
                     print("האימות נכשל — מרענן…", flush=True)
@@ -190,20 +213,77 @@ def main() -> int:
             return 1
 
         save_token(token)
+
+        # Trigger loginByBio (SPA often calls it after reload when remember-me exists)
+        print("מנסה ללכוד bio לחידוש אוטומטי…", flush=True)
+        try:
+            page.goto(
+                "https://webtop.smartschool.co.il/dashboard",
+                wait_until="domcontentloaded",
+                timeout=60000,
+            )
+            page.wait_for_timeout(4000)
+            page.reload(wait_until="domcontentloaded")
+            page.wait_for_timeout(4000)
+        except Exception:
+            pass
+
+        # Fallback: cookie named bioLogin
+        if not captured_bio.get("bioLogin"):
+            for c in context.cookies():
+                if c.get("name") == "bioLogin" and c.get("value"):
+                    unique = next(
+                        (x.get("value") for x in context.cookies() if x.get("name") == "uniqueId"),
+                        "",
+                    )
+                    captured_bio.update(
+                        {
+                            "bioLogin": c["value"],
+                            "deviceId": "",
+                            "selectedUser": "",
+                            "uniqueId": unique or "",
+                            "isMobile": True,
+                            "mode": "2",
+                        }
+                    )
+                    print("BIO captured from cookie", flush=True)
+                    break
+
         api = WebtopApi(token)
-        ok = api.check_token()
-        if not ok:
-            print("אזהרה: הטוקן נשמר אבל CheckToken נכשל — נסי שוב", flush=True)
+        if not api.check_token():
+            print("אזהרה: הטוקן נשמר אבל CheckToken נכשל", flush=True)
             return 1
 
-        clipped = _copy_clipboard(token)
+        bio_ok = False
+        if captured_bio.get("bioLogin"):
+            save_bio(captured_bio)
+            # Verify renew works
+            test = WebtopApi("")
+            bio_ok = test.renew_via_bio()
+            if bio_ok:
+                print("BIO verified — חידוש אוטומטי עובד", flush=True)
+            else:
+                print("BIO נשמר אבל האימות נכשל — עדיין אפשר להשתמש בטוקן", flush=True)
+
+        clip_payload = (
+            json.dumps(captured_bio, ensure_ascii=False)
+            if captured_bio.get("bioLogin")
+            else token
+        )
+        clipped = _copy_clipboard(clip_payload)
+
         print("", flush=True)
-        print("OK — הטוקן תקף ונשמר ב־webtop_token.txt", flush=True)
+        print("OK — נשמר מקומית.", flush=True)
+        if captured_bio.get("bioLogin"):
+            print("ב־Render שימי משתנה:", flush=True)
+            print("  WEBTOP_BIO_JSON  =  (מה שהועתק ללוח — כל ה־JSON)", flush=True)
+            print("אחרי זה «עדכן עכשיו» יחדש טוקן לבד (~שנה).", flush=True)
+        else:
+            print("לא נלכד bio — הועתק רק WEBTOP_TOKEN (קצר יותר).", flush=True)
+            print("נסי שוב אחרי כניסה מוצלחת, או רענון דף ב־Webtop.", flush=True)
         if clipped:
-            print("הועתק ללוח (Clipboard).", flush=True)
-        print("עכשיו ב־Render → Environment → WEBTOP_TOKEN → הדביקי (Ctrl+V) → Save", flush=True)
-        print(f"אורך טוקן: {len(token)} · מתחיל ב־{token[:8]}…", flush=True)
-        return 0
+            print("הועתק ללוח.", flush=True)
+        return 0 if (bio_ok or token) else 1
 
 
 if __name__ == "__main__":

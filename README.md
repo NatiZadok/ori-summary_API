@@ -1,36 +1,28 @@
 # ori-summary_API — סיכום אורי דרך Webtop API
 
-עותק של פרויקט הסיכום המשפחתי, עם **איסוף נתונים ב־HTTP API**  
-(`webtopserver.smartschool.co.il`) במקום סריקת דפדפן (Playwright).
+איסוף נתונים ב־HTTP API (בלי Playwright בעדכון עצמו).
 
-## מה השתנה לעומת ori-summary
+## חידוש אוטומטי (בלי ללחוץ בכל עדכון)
 
-| לפני | עכשיו |
-|------|--------|
-| Playwright + CAPTCHA | `webToken` + קריאות API |
-| `update_webtop.py` | `update_data.py` |
-| Docker Playwright | Python slim |
+1. **פעם אחת במחשב:** `רענון-טוקן.bat`  
+   Chrome → CAPTCHA → כניסה.  
+   נשמרים `webToken` + `bio_credentials.json` (~שנה).
+2. מה שהועתק ללוח — הדביקי ב־Render ל־**`WEBTOP_BIO_JSON`** (JSON מלא).
+3. מכאן: **עדכן עכשיו** מחדש טוקן לבד דרך `loginByBio` — בלי CAPTCHA.
 
-## הפעלה מקומית
+כש־bio פג (~שנה) — רק אז שוב `רענון-טוקן.bat`.
 
-1. `רענון-טוקן.bat` (או בדף: **רענון טוקן**) — Chrome + CAPTCHA פעם אחת; הטוקן נשמר ומועתק ללוח
-2. `הפעל-סיכום.bat` → http://127.0.0.1:8765/
-3. **עדכן עכשיו**
-
-אפשר גם ידנית: DevTools → Cookies → `webToken`, או קובץ `webtop_token.txt`.
-
-## Render
+## Render Environment
 
 | משתנה | תפקיד |
 |--------|--------|
 | `APP_USER` / `APP_PASSWORD` | Basic Auth לדף |
-| `WEBTOP_TOKEN` | **מומלץ** — עוגיית webToken |
-| `WEBTOP_STATE_B64` | חלופה — storage עם webToken |
+| `WEBTOP_BIO_JSON` | **מומלץ** — חידוש אוטומטי ~שנה |
+| `WEBTOP_TOKEN` | אופציונלי / גיבוי קצר |
 
-Runtime: **Docker** (`Dockerfile` רגיל, בלי Playwright).
+Runtime: **Docker**.
 
-## הערות
+## מקומי
 
-- התחברות מאפס עדיין דורשת CAPTCHA ב־Webtop — לכן משתמשים ב־token קיים.
-- Token רגיל נמשך שעות; עם remember-me / bio יכול להחזיק הרבה יותר.
-- חתימות בחלון דפדפן לא חלק מזרימת ה־API (placeholder בדשבורד).
+`הפעל-סיכום.bat` → http://127.0.0.1:8765/ → עדכן עכשיו  
+(או כפתור 🔑 רענון טוקן להגדרה מחדש)

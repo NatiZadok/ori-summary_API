@@ -104,11 +104,10 @@ def alerts_from_preview(preview: dict) -> list[dict]:
 def scrape() -> int:
     total = 7
     where = "בענן (API)" if ON_CLOUD else "מקומית (API)"
-    step(1, total, "מתחבר ל־Webtop API", f"בודק webToken {where}…")
+    step(1, total, "מתחבר ל־Webtop API", f"מאמת / מחדש טוקן אוטומטית {where}…")
     try:
         api = WebtopApi()
-        if not api.check_token():
-            raise WebtopApiError("webToken לא תקף — יש לרענן WEBTOP_TOKEN")
+        api.ensure_auth()  # token חי, או חידוש אוטומטי מ־bio בלי CAPTCHA
         child = api.ensure_child()
         save_token(api.token)
         school = "ב׳ זיו בו ציון"

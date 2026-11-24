@@ -3,6 +3,7 @@ config.json
 webtop_state.json
 webtop_state.b64.txt
 webtop_token.txt
+bio_credentials.json
 .webtop-chrome-profile/
 .webtop-manual-profile/
 .webtop-token-profile/
