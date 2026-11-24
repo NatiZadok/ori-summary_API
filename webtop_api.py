@@ -155,6 +155,7 @@ class WebtopApi:
         self.api_base = (api_base or CONFIG.get("api_base") or API_BASE).rstrip("/")
         self.child: dict[str, Any] | None = None
         self.study_year: int | None = None
+        self._last_auth_error = ""
 
     def _headers(self) -> dict[str, str]:
         headers = {
@@ -205,7 +206,9 @@ class WebtopApi:
         try:
             self.post("dashboard/CheckToken", {})
             return True
-        except WebtopApiError:
+        except WebtopApiError as exc:
+            print(f"AUTH CheckToken failed: {exc}", flush=True)
+            self._last_auth_error = str(exc)
             return False
 
     def renew_via_bio(self) -> bool:
@@ -225,6 +228,7 @@ class WebtopApi:
             data = self.post("user/loginByBio", body)
         except WebtopApiError as exc:
             print(f"BIO renew failed: {exc}", flush=True)
+            self._last_auth_error = str(exc)
             return False
         if not isinstance(data, dict):
             return False
@@ -239,8 +243,13 @@ class WebtopApi:
 
     def ensure_auth(self) -> None:
         """Prefer live token; otherwise renew automatically via bio."""
+        self._last_auth_error = ""
+        has_token = bool(self.token)
+        print(
+            f"AUTH start token_len={len(self.token)} bio={bool(load_bio())} cloud={ON_CLOUD}",
+            flush=True,
+        )
         if self.check_token():
-            # Keep session warm when possible
             try:
                 self.post("dashboard/CheckBackgroundToken", {})
             except WebtopApiError:
@@ -249,10 +258,15 @@ class WebtopApi:
         print("AUTH token missing/expired — trying bio auto-renew…", flush=True)
         if self.renew_via_bio():
             return
+        detail = self._last_auth_error or "סיבה לא ידועה"
+        if not has_token and not load_bio():
+            raise WebtopApiError(
+                "ב־Render חסר WEBTOP_TOKEN (או WEBTOP_BIO_JSON). "
+                "העתיקי מ־webtop_token.txt במחשב ל־Environment → WEBTOP_TOKEN → Save."
+            )
         raise WebtopApiError(
-            "אין webToken תקף ואין bio אוטומטי. "
-            "הריצי פעם אחת רענון-טוקן.bat (שומר גם bio), "
-            "ואז שימי WEBTOP_BIO_JSON ב־Render."
+            f"הטוקן/bio לא עובדים מול Webtop מהשרת. פרט: {detail}. "
+            "בדקי ש־WEBTOP_TOKEN נשמר ב־Render אחרי Save/Redeploy."
         )
 
     def init_dashboard(self) -> dict:

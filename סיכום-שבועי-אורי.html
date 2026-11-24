@@ -2950,16 +2950,25 @@
     });
 
     document.getElementById("update-btn").addEventListener("click", runUpdate);
-    document.getElementById("token-btn")?.addEventListener("click", async () => {
-      const apiBase = location.protocol === "file:" ? "http://127.0.0.1:8765" : "";
-      try {
-        const res = await fetch(apiBase + "/api/refresh-token");
-        const j = await res.json();
-        alert(j.message || (j.ok ? "נפתח חלון לרענון טוקן" : "לא ניתן לרענן טוקן"));
-      } catch (err) {
-        alert("רענון טוקן זמין רק מקומית (הפעל-סיכום.bat). או הריצי רענון-טוקן.bat");
+    (function initTokenBtn() {
+      const btn = document.getElementById("token-btn");
+      if (!btn) return;
+      const onRender = /onrender\.com$/i.test(location.hostname);
+      if (onRender) {
+        btn.hidden = true;
+        return;
       }
-    });
+      btn.addEventListener("click", async () => {
+        const apiBase = location.protocol === "file:" ? "http://127.0.0.1:8765" : "";
+        try {
+          const res = await fetch(apiBase + "/api/refresh-token");
+          const j = await res.json();
+          alert(j.message || (j.ok ? "נפתח חלון לרענון טוקן" : "לא ניתן לרענן טוקן"));
+        } catch (err) {
+          alert("רענון טוקן: הריצי רענון-טוקן.bat במחשב");
+        }
+      });
+    })();
     document.getElementById("close-progress").addEventListener("click", () => {
       document.getElementById("progress-overlay").classList.remove("open");
     });
