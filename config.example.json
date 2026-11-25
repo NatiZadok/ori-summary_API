@@ -2,5 +2,10 @@
   "token": "PASTE_webToken_HERE",
   "username": "OPTIONAL_USERNAME",
   "password": "OPTIONAL_PASSWORD",
-  "api_base": "https://webtopserver.smartschool.co.il/server/api"
+  "api_base": "https://webtopserver.smartschool.co.il/server/api",
+  "_comments": {
+    "token": "Opaque webToken cookie value. Prefer WEBTOP_TOKEN env in cloud. Use WEBTOP_FORCE_ENV_TOKEN=1 to intentionally override a saved file token.",
+    "api_base": "Must remain https://webtopserver.smartschool.co.il/server/api unless SmartSchool documents otherwise.",
+    "security": "Never commit real config.json, tokens, bio, or passwords."
+  }
 }

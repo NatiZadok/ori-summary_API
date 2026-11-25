@@ -2782,7 +2782,7 @@
         document.getElementById("progress-hint").textContent =
           msg && msg !== "server"
             ? msg
-            : "לא ניתן להתחבר לשרת העדכון. במחשב הבית הפעילי «הפעל-סיכום-מרחוק.bat» + מנהרה, וב־Render הגדירי HOME_UPDATE_URL.";
+            : "לא ניתן להתחבר לשרת העדכון. בדקי שהשירות רץ ושיש הרשאה לדף.";
         document.querySelector('#steps-list li[data-step="1"]')?.classList.add("error");
       } finally {
         btn.disabled = false;
