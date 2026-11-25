@@ -4,6 +4,7 @@ webtop_state.json
 webtop_state.b64.txt
 webtop_token.txt
 bio_credentials.json
+webtop_session_meta.json
 .webtop-chrome-profile/
 .webtop-manual-profile/
 .webtop-token-profile/
