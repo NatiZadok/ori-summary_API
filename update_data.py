@@ -117,6 +117,9 @@ def scrape() -> int:
         step(1, total, "מתחבר ל־Webtop API", f"מחובר · {name or 'תלמיד'} ✓", "done")
     except WebtopApiError as exc:
         msg = exc.user_message()
+        detail = str(exc).strip()
+        if detail and detail not in msg:
+            msg = f"{msg} {detail}"
         step(1, total, "מתחבר ל־Webtop API", msg, "error")
         done(False, msg)
         return 1

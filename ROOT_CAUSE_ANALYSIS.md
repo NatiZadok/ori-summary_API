@@ -8,6 +8,9 @@ Primary objective: authorized Webtop update from Render without tunnels/proxies/
 
 | Defect | Location | Evidence | Correction |
 |--------|----------|----------|------------|
+| CheckToken `data=false` treated as auth success | `check_token` / `ensure_auth` | Local: HTTP 200 `{status:true,data:false}` then InitDashboard HTTP 401 empty; fingerprint unchanged | Require `data is True`; full session = CheckToken + CheckBackgroundToken + InitDashboard |
+| No CookieJar / ignored Set-Cookie | `WebtopApi` opener | Manual `Cookie` header only; jar absent | `HTTPCookieProcessor` + jar-seeded `webToken`; no conflicting manual Cookie header; log Set-Cookie **names/count only** |
+| CheckBackgroundToken result ignored | `ensure_auth` | Returned `bool` and was discarded | Validate `data is True`; apply token updates if present |
 | Import-time credential file writes | `bootstrap_token_from_env()` called at import | Module load overwrote `webtop_token.txt` from env | Explicit bootstrap only (`update_data` / diagnose) |
 | Env token always beat file token | `extract_web_token()` | Stale env could mask renewed file token | `TokenManager` precedence + `WEBTOP_FORCE_ENV_TOKEN` for intentional rotation |
 | Opaque token URL-decoding | `_clean_token()` | `%` triggered `unquote` on opaque secret | `normalize_token()` strips whitespace/quotes only |
