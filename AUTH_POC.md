@@ -3,11 +3,14 @@
 Branch: `feature/webtop-dynamic-auth-poc`  
 Date: 2026-11-25
 
+> **Superseded for feasibility:** see [`AUTH_FEASIBILITY.md`](AUTH_FEASIBILITY.md).  
+> This PoC only **validates existing credentials**. That is **not** dynamic authentication. No further connection UI until an official mint path exists.
+
 ## Gate decision
 
 **Full dynamic auth (no `WEBTOP_TOKEN` / no manual Render env) is NOT implemented as production replacement.**
 
-Reason: the minimal authorized-auth PoC cannot clear the acceptance gate for Render.
+Reason: no supported token-mint / OAuth for Israeli Webtop; unofficial password login stores secrets and is CAPTCHA-bound; isolated zero-credential probe failed (`MISSING_TOKEN` / failed password login).
 
 | Gate | Result |
 |------|--------|
