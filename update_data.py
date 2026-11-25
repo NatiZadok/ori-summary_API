@@ -13,6 +13,7 @@ from webtop_api import (
     ON_CLOUD,
     WebtopApi,
     WebtopApiError,
+    bootstrap_token_from_env,
     extract_homework_from_weeks,
     parse_iso_date,
     save_token,
@@ -104,15 +105,21 @@ def alerts_from_preview(preview: dict) -> list[dict]:
 def scrape() -> int:
     total = 7
     where = "בענן (API)" if ON_CLOUD else "מקומית (API)"
-    step(1, total, "מתחבר ל־Webtop API", f"מאמת / מחדש טוקן אוטומטית {where}…")
+    bootstrap_token_from_env()  # explicit — never on import
+    step(1, total, "מתחבר ל־Webtop API", f"מאמת טוקן {where}…")
     try:
         api = WebtopApi()
-        api.ensure_auth()  # token חי, או חידוש אוטומטי מ־bio בלי CAPTCHA
+        api.ensure_auth()  # token חי; bio renew רק לכשלי auth/expiry — לא ל־403 HTML
         child = api.ensure_child()
         save_token(api.token)
         school = "ב׳ זיו בו ציון"
         name = f"{child.get('firstName', '')} {child.get('lastName', '')}".strip()
         step(1, total, "מתחבר ל־Webtop API", f"מחובר · {name or 'תלמיד'} ✓", "done")
+    except WebtopApiError as exc:
+        msg = exc.user_message()
+        step(1, total, "מתחבר ל־Webtop API", msg, "error")
+        done(False, msg)
+        return 1
     except Exception as exc:
         step(1, total, "מתחבר ל־Webtop API", str(exc), "error")
         done(False, str(exc))
@@ -141,16 +148,18 @@ def scrape() -> int:
     unread_msg = sum(1 for m in raw_msgs if not m.get("hasRead"))
     step(2, total, "קורא הודעות", f"נמצאו {len(messages)} הודעות ✓", "done")
 
-    # Signatures — API path not exposed the same way; keep soft placeholder
-    step(3, total, "בודק חתימות ואישורים", "בודק…")
+    # Signatures — endpoint not verified in this API client; do not invent zeros.
+    step(3, total, "בודק חתימות ואישורים", "לא נבדק בנתיב API הנוכחי…")
     signatures = {
-        "pending": 0,
-        "action_required": False,
+        "pending": None,
+        "checked": False,
+        "status": "not_checked",
+        "action_required": None,
         "inbox_url": "https://webtop.smartschool.co.il/signMessaes?view=Inbox",
         "items": [],
-        "text": "✅ חתימות ואישורים: נבדק דרך API (אין פריטים ממתינים שזוהו).",
+        "text": "ℹ️ חתימות ואישורים: לא נבדקו בנתיב API הנוכחי (אין נתון).",
     }
-    step(3, total, "בודק חתימות ואישורים", "0 פריטים · 0 ממתינים ✓", "done")
+    step(3, total, "בודק חתימות ואישורים", "לא נבדק (אין מקור API מאומת)", "done")
 
     # Alerts
     step(4, total, "אוסף התראות", "Menu/GetPreviewUnreadNotifications…")
