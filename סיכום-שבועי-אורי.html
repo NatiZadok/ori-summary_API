@@ -1701,7 +1701,11 @@
             <span class="chip" id="chip-school">🏫 ב׳ זיו בו ציון</span>
           </div>
           <div class="hero-update-block">
+            <span class="chip" id="chip-webtop-status" title="מצב חיבור Webtop">🔌 מצב Webtop…</span>
             <button type="button" class="update-btn" id="update-btn">🔄 עדכן עכשיו</button>
+            <button type="button" class="update-btn" id="webtop-connect-btn" style="background:#2f6f4e;margin-top:0.4rem">🔗 התחברות ל-Webtop</button>
+            <button type="button" class="update-btn" id="webtop-reconnect-btn" style="background:#3d7a5c;margin-top:0.4rem">♻️ התחברות מחדש</button>
+            <button type="button" class="update-btn" id="webtop-disconnect-btn" style="background:#6b5b4f;margin-top:0.4rem">⛔ ניתוק מ-Webtop</button>
             <button type="button" class="update-btn" id="token-btn" style="background:#5b6ee1;margin-top:0.4rem">🔑 רענון טוקן</button>
             <span class="chip updated-chip" id="chip-updated">⏱️ טרם עודכן מהשרת</span>
           </div>
@@ -2950,6 +2954,76 @@
     });
 
     document.getElementById("update-btn").addEventListener("click", runUpdate);
+
+    (function initWebtopConnectionUi() {
+      const apiBase = location.protocol === "file:" ? "http://127.0.0.1:8765" : "";
+      const statusChip = document.getElementById("chip-webtop-status");
+      const connectBtn = document.getElementById("webtop-connect-btn");
+      const reconnectBtn = document.getElementById("webtop-reconnect-btn");
+      const disconnectBtn = document.getElementById("webtop-disconnect-btn");
+
+      async function refreshWebtopStatus() {
+        if (!statusChip) return;
+        try {
+          const res = await fetch(apiBase + "/api/webtop/status");
+          if (!res.ok) throw new Error("status " + res.status);
+          const j = await res.json();
+          statusChip.textContent = "🔌 " + (j.status_label || "מצב Webtop");
+          statusChip.title = j.message || "";
+          if (j.status === "access_rejected") statusChip.style.background = "#f3d6d6";
+          else if (j.status === "connected") statusChip.style.background = "#d8efe0";
+          else statusChip.style.background = "";
+        } catch (err) {
+          statusChip.textContent = "🔌 מצב Webtop לא זמין";
+        }
+      }
+
+      async function showConnectInfo() {
+        try {
+          const res = await fetch(apiBase + "/api/webtop/connect-info");
+          const j = await res.json();
+          const steps = (j.steps_he || []).map((s, i) => (i + 1) + ") " + s).join("\n");
+          if (j.login_url) window.open(j.login_url, "_blank", "noopener,noreferrer");
+          alert(
+            (j.official_oauth_available
+              ? "ממשק OAuth זמין.\n"
+              : "אין ממשק OAuth נתמך מצד Webtop — התחברות באתר הרשמי בלבד.\n") +
+              steps +
+              "\n\nסיסמת Webtop לא מוזנת ולא נשמרת באפליקציה."
+          );
+          // PoC probe after user acknowledges connect intent
+          statusChip.textContent = "🔌 " + "מתחבר מחדש…";
+          const poc = await fetch(apiBase + "/api/webtop/poc-probe", { method: "POST" });
+          const body = await poc.json();
+          alert(
+            (body.status_label || "") +
+              "\n" +
+              (body.message || "") +
+              (body.acceptance_gate && body.acceptance_gate.reason
+                ? "\n\nשער קבלה: " + body.acceptance_gate.reason
+                : "")
+          );
+          await refreshWebtopStatus();
+        } catch (err) {
+          alert("לא ניתן לפתוח את תהליך החיבור כרגע.");
+        }
+      }
+
+      connectBtn?.addEventListener("click", showConnectInfo);
+      reconnectBtn?.addEventListener("click", showConnectInfo);
+      disconnectBtn?.addEventListener("click", async () => {
+        try {
+          const res = await fetch(apiBase + "/api/webtop/disconnect", { method: "POST" });
+          const j = await res.json();
+          alert(j.message || "נותק");
+          await refreshWebtopStatus();
+        } catch (err) {
+          alert("ניתוק נכשל");
+        }
+      });
+      refreshWebtopStatus();
+    })();
+
     (function initTokenBtn() {
       const btn = document.getElementById("token-btn");
       if (!btn) return;

@@ -6,6 +6,8 @@ webtop_token.txt
 webtop_state.json
 webtop_state.b64.txt
 bio_credentials.json
+webtop_session_meta.json
+AUTH_POC.md
 .webtop-chrome-profile
 .webtop-manual-profile
 .webtop-token-profile

@@ -26,6 +26,12 @@ from pathlib import Path
 from urllib.parse import unquote, urlparse
 
 from webtop_api import DIAGNOSTICS, ON_CLOUD, env_flag, git_revision
+from webtop_connection import (
+    connect_info,
+    disconnect_runtime,
+    get_connection_status,
+    run_auth_poc,
+)
 
 ROOT = Path(__file__).resolve().parent
 ON_RENDER = bool(os.environ.get("RENDER")) or ON_CLOUD
@@ -36,6 +42,11 @@ APP_PASSWORD = os.environ.get("APP_PASSWORD", "")
 UPDATE_TIMEOUT_SEC = int(os.environ.get("UPDATE_TIMEOUT_SEC", "180"))
 _update_lock = threading.Lock()
 ALLOWED_STATIC = frozenset({"/", "/סיכום-שבועי-אורי.html", "/data.json", "/healthz", "/api/health"})
+PUBLIC_ORIGIN_HOSTS = frozenset(
+    h.strip().lower()
+    for h in (os.environ.get("APP_PUBLIC_HOSTS") or "localhost,127.0.0.1,ori-summary-api.onrender.com").split(",")
+    if h.strip()
+)
 
 _REDACT_PATTERNS = (
     (re.compile(r"(?i)(Bearer\s+)\S+"), r"\1[REDACTED]"),
@@ -192,11 +203,64 @@ class Handler(SimpleHTTPRequestHandler):
                 )
             return self._refresh_token()
 
+        if path == "/api/webtop/status":
+            return self._json(200, get_connection_status())
+
+        if path == "/api/webtop/connect-info":
+            return self._json(200, connect_info())
+
         if path == "/":
             self.path = "/סיכום-שבועי-אורי.html"
         elif path not in ("/סיכום-שבועי-אורי.html", "/data.json"):
             return self.send_error(404, "Not Found")
         return super().do_GET()
+
+    def _origin_ok(self) -> bool:
+        """Basic same-origin check for state-changing POSTs (CSRF mitigation)."""
+        origin = (self.headers.get("Origin") or "").strip()
+        referer = (self.headers.get("Referer") or "").strip()
+        host = (self.headers.get("Host") or "").split(":")[0].lower()
+        if host and host not in PUBLIC_ORIGIN_HOSTS and not host.endswith(".onrender.com"):
+            # Allow unknown hosts only when not in cloud (local LAN/dev).
+            if ON_RENDER:
+                return False
+        for value in (origin, referer):
+            if not value:
+                continue
+            try:
+                parsed = urlparse(value)
+                if parsed.hostname and (
+                    parsed.hostname.lower() in PUBLIC_ORIGIN_HOSTS
+                    or parsed.hostname.lower().endswith(".onrender.com")
+                    or (not ON_RENDER and parsed.hostname.lower() in ("localhost", "127.0.0.1", host))
+                ):
+                    return True
+            except Exception:
+                continue
+        # Same-origin navigations may omit Origin; require Host match for those.
+        return origin == "" and referer == ""
+
+    def do_POST(self):
+        if not self._require_auth():
+            return
+        path = unquote(urlparse(self.path).path)
+        if not self._origin_ok():
+            return self._json(403, {"ok": False, "message": "Origin לא מורשה"})
+        length = int(self.headers.get("Content-Length") or 0)
+        if length > 65536:
+            return self._json(413, {"ok": False, "message": "payload גדול מדי"})
+        if length:
+            _ = self.rfile.read(length)
+
+        if path == "/api/webtop/poc-probe":
+            # Live probe using existing session material — does not mint OAuth.
+            live = env_flag("WEBTOP_POC_LIVE", True)
+            return self._json(200, run_auth_poc(live_probe=live))
+
+        if path == "/api/webtop/disconnect":
+            return self._json(200, disconnect_runtime())
+
+        return self._json(404, {"ok": False, "message": "Not Found"})
 
     def _open_signatures(self):
         subprocess.Popen(
