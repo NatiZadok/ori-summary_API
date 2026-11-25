@@ -125,35 +125,18 @@ def test_ensure_auth_renews_only_for_auth_failure_with_bio(tmp_path, monkeypatch
     tm.save_bio({"bioLogin": "x", "mode": "2"})
     api = WebtopApi(token="old-token", token_manager=tm)
 
-    state = {"n": 0}
-
-    def fake_post(path, body=None):
-        state["n"] += 1
-        if path == "dashboard/CheckToken" and state["n"] == 1:
-            raise WebtopApiError(
-                "bad",
-                category=ErrorCategory.AUTHENTICATION_REQUIRED,
-                status=200,
-                endpoint=path,
-            )
-        if path == "dashboard/InitDashboard":
-            raise WebtopApiError(
-                "bad",
-                category=ErrorCategory.AUTHENTICATION_REQUIRED,
-                status=200,
-                endpoint=path,
-            )
-        if path == "user/loginByBio":
-            return {"token": "new-token"}
-        if path == "dashboard/CheckToken":
-            return {}
-        if path == "dashboard/CheckBackgroundToken":
-            return {}
-        raise AssertionError(path)
-
-    api.post = fake_post  # type: ignore[method-assign]
-    api.ensure_auth()
-    assert api.token == "new-token"
+    with patch.object(
+        api,
+        "establish_session",
+        side_effect=WebtopApiError(
+            "data=false",
+            category=ErrorCategory.INVALID_TOKEN,
+            endpoint="dashboard/CheckToken",
+        ),
+    ):
+        with patch.object(api, "renew_via_bio", return_value=True) as renew:
+            api.ensure_auth()
+            renew.assert_called_once()
 
 
 def test_refuses_non_https_host(tmp_path):

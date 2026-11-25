@@ -13,11 +13,13 @@ import tempfile
 import time
 import uuid
 from enum import Enum
+from http.cookiejar import Cookie, CookieJar
 from pathlib import Path
 from typing import Any
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlparse
 from urllib.request import (
+    HTTPCookieProcessor,
     HTTPRedirectHandler,
     HTTPSHandler,
     ProxyHandler,
@@ -511,6 +513,23 @@ def classify_http_failure(
     return ErrorCategory.UNKNOWN
 
 
+def set_cookie_names(headers: Any) -> list[str]:
+    """Return Set-Cookie header names only — never values."""
+    if headers is None:
+        return []
+    try:
+        vals = headers.get_all("Set-Cookie") or []
+    except Exception:
+        sc = headers.get("Set-Cookie") if hasattr(headers, "get") else None
+        vals = [sc] if sc else []
+    names: list[str] = []
+    for value in vals:
+        name = (value or "").split("=", 1)[0].strip()
+        if name:
+            names.append(name)
+    return names
+
+
 def safe_http_diag(
     *,
     endpoint: str,
@@ -521,6 +540,7 @@ def safe_http_diag(
     category: ErrorCategory | None = None,
 ) -> dict[str, Any]:
     content_type = _header_get(headers, "Content-Type")
+    cookie_names = set_cookie_names(headers)
     diag = {
         "endpoint": endpoint,
         "status": status,
@@ -534,6 +554,8 @@ def safe_http_diag(
         "cf_mitigated": _header_get(headers, "CF-Mitigated"),
         "content_type": content_type,
         "body_kind": body_kind(content_type, body_text),
+        "set_cookie_count": len(cookie_names),
+        "set_cookie_names": cookie_names,
         "duration_ms": round(duration_ms, 1) if duration_ms is not None else None,
         "category": category.value if category else None,
     }
@@ -543,6 +565,22 @@ def safe_http_diag(
         flush=True,
     )
     return diag
+
+
+def extract_token_from_payload(data: Any) -> str:
+    if isinstance(data, dict):
+        for key in ("token", "Token", "webToken", "accessToken"):
+            if data.get(key):
+                return normalize_token(str(data[key]))
+        for nest in ("user", "session", "login"):
+            nested = data.get(nest)
+            if isinstance(nested, dict):
+                found = extract_token_from_payload(nested)
+                if found:
+                    return found
+    elif isinstance(data, str) and len(data) > 40:
+        return normalize_token(data)
+    return ""
 
 
 class WebtopApi:
@@ -557,6 +595,7 @@ class WebtopApi:
         self._last_diag: dict[str, Any] = {}
         self._token_source = "none"
         self.correlation_id = uuid.uuid4().hex[:12]
+        self._jar = CookieJar()
         if token is not None:
             self.token = normalize_token(token)
             self._token_source = "constructor"
@@ -566,8 +605,10 @@ class WebtopApi:
             except WebtopApiError:
                 self.token = ""
                 self._token_source = "none"
+        self._seed_web_token_cookie()
         self._opener = build_opener(
             ProxyHandler(getproxies()),
+            HTTPCookieProcessor(self._jar),
             DenyRedirectHandler,
             HTTPSHandler(),
         )
@@ -585,8 +626,92 @@ class WebtopApi:
                 category=ErrorCategory.CONFIGURATION_ERROR,
             )
 
+    def _seed_web_token_cookie(self) -> None:
+        """Put webToken into CookieJar. Do not also set a manual Cookie header."""
+        for cookie in list(self._jar):
+            if cookie.name == "webToken":
+                try:
+                    self._jar.clear(cookie.domain, cookie.path, cookie.name)
+                except KeyError:
+                    pass
+        if not self.token:
+            return
+        self._jar.set_cookie(
+            Cookie(
+                version=0,
+                name="webToken",
+                value=self.token,
+                port=None,
+                port_specified=False,
+                domain=ALLOWED_API_HOST,
+                domain_specified=True,
+                domain_initial_dot=False,
+                path="/",
+                path_specified=True,
+                secure=True,
+                expires=None,
+                discard=True,
+                comment=None,
+                comment_url=None,
+                rest={},
+                rfc2109=False,
+            )
+        )
+
+    def _sync_token_from_jar(self) -> bool:
+        """Adopt rotated webToken from Set-Cookie via CookieJar. Returns True if changed."""
+        for cookie in self._jar:
+            if cookie.name != "webToken" or not cookie.value:
+                continue
+            candidate = normalize_token(cookie.value)
+            if candidate and candidate != self.token:
+                print(
+                    f"AUTH session cookie rotated fp16={short_fingerprint(candidate)} "
+                    f"jar_count={len(list(self._jar))}",
+                    flush=True,
+                )
+                self.token = candidate
+                self._token_source = "set_cookie"
+                self._seed_web_token_cookie()
+                return True
+        return False
+
+    def _apply_token_update(self, payload: Any, *, source: str) -> bool:
+        candidate = extract_token_from_payload(payload)
+        if not candidate or candidate == self.token:
+            return False
+        print(
+            f"AUTH token updated from {source} fp16={short_fingerprint(candidate)}",
+            flush=True,
+        )
+        self.token = candidate
+        self._token_source = source
+        self._seed_web_token_cookie()
+        return True
+
+    def _require_check_flag(self, endpoint: str, data: Any) -> None:
+        """CheckToken / CheckBackgroundToken return boolean data; True means usable session."""
+        if data is True:
+            return
+        if data is False:
+            raise WebtopApiError(
+                f"{endpoint} data=false — token is not usable for a full session",
+                category=ErrorCategory.INVALID_TOKEN,
+                endpoint=endpoint,
+                status=self._last_diag.get("status"),
+                diagnostics=self._last_diag,
+            )
+        raise WebtopApiError(
+            f"{endpoint} unexpected data type={type(data).__name__}",
+            category=ErrorCategory.UNEXPECTED_RESPONSE,
+            endpoint=endpoint,
+            status=self._last_diag.get("status"),
+            diagnostics=self._last_diag,
+        )
+
     def _headers(self) -> dict[str, str]:
-        # Keep existing header set — local success path must remain unchanged.
+        # Cookie auth is sent by HTTPCookieProcessor from CookieJar.
+        # Do not set a manual Cookie header — it conflicts with jar-managed session cookies.
         headers = {
             "Content-Type": "application/json; charset=utf-8",
             "Accept": "application/json, text/plain, */*",
@@ -600,12 +725,15 @@ class WebtopApi:
             ),
         }
         if self.token:
-            headers["Cookie"] = f"webToken={self.token}"
             headers["Authorization"] = f"Bearer {self.token}"
         return headers
 
     def request_header_names(self) -> list[str]:
-        return sorted(self._headers().keys())
+        # Include Cookie as conceptually present via jar when token exists.
+        names = set(self._headers().keys())
+        if self.token:
+            names.add("Cookie")
+        return sorted(names)
 
     def post(self, path: str, body: Any = None) -> Any:
         endpoint = path if path.startswith("http") else path.lstrip("/")
@@ -619,6 +747,8 @@ class WebtopApi:
             )
         payload = {} if body is None else body
         raw = json.dumps(payload, ensure_ascii=False).encode("utf-8")
+        # Keep jar cookie in sync with current token before each request.
+        self._seed_web_token_cookie()
         req = Request(url, data=raw, headers=self._headers(), method="POST")
         started = time.perf_counter()
         try:
@@ -633,6 +763,7 @@ class WebtopApi:
                     body_text=text,
                     duration_ms=duration_ms,
                 )
+                self._sync_token_from_jar()
         except HTTPError as exc:
             err_text = ""
             try:
@@ -656,6 +787,7 @@ class WebtopApi:
             )
             self._last_diag = diag
             self._last_category = category
+            self._sync_token_from_jar()
             raise WebtopApiError(
                 f"{endpoint} HTTP {exc.code}",
                 category=category,
@@ -727,7 +859,9 @@ class WebtopApi:
                 payload=data,
                 diagnostics=self._last_diag,
             )
-        return data.get("data")
+        payload_data = data.get("data")
+        self._apply_token_update(payload_data, source=endpoint)
+        return payload_data
 
     def check_token(self) -> bool:
         if not self.token:
@@ -735,8 +869,9 @@ class WebtopApi:
             self._last_category = ErrorCategory.MISSING_TOKEN
             return False
         try:
-            self.post("dashboard/CheckToken", {})
-            print("AUTH CheckToken succeeded=True", flush=True)
+            data = self.post("dashboard/CheckToken", {})
+            self._require_check_flag("dashboard/CheckToken", data)
+            print("AUTH CheckToken succeeded=True data=true", flush=True)
             return True
         except WebtopApiError as exc:
             print(
@@ -747,6 +882,88 @@ class WebtopApi:
             self._last_auth_error = str(exc)
             self._last_category = exc.category
             return False
+
+    def diagnose_auth_flow(self) -> dict[str, Any]:
+        """End-to-end auth diagnostic: CheckToken → CheckBackgroundToken → InitDashboard."""
+        report: dict[str, Any] = {
+            "token_present": bool(self.token),
+            "token_len": len(self.token),
+            "token_fp16": short_fingerprint(self.token),
+            "token_source": self._token_source,
+            "jar_cookie_count": len(list(self._jar)),
+            "steps": [],
+        }
+
+        def step(name: str) -> None:
+            entry: dict[str, Any] = {"endpoint": name}
+            try:
+                data = self.post(name, {})
+                entry["ok"] = True
+                entry["http"] = dict(self._last_diag)
+                entry["data_type"] = type(data).__name__
+                if name in ("dashboard/CheckToken", "dashboard/CheckBackgroundToken"):
+                    entry["data_bool"] = data if isinstance(data, bool) else None
+                    self._require_check_flag(name, data)
+                elif name == "dashboard/InitDashboard":
+                    if not isinstance(data, dict):
+                        raise WebtopApiError(
+                            "InitDashboard expected object data",
+                            category=ErrorCategory.UNEXPECTED_RESPONSE,
+                            endpoint=name,
+                            diagnostics=self._last_diag,
+                        )
+                    kids = data.get("childrens") or data.get("children") or []
+                    entry["children_count"] = len(kids) if isinstance(kids, list) else None
+                    entry["data_keys"] = sorted(str(k) for k in data.keys())
+                report["steps"].append(entry)
+            except WebtopApiError as exc:
+                entry["ok"] = False
+                entry["category"] = exc.category.value
+                entry["status"] = exc.status
+                entry["http"] = exc.diagnostics or dict(self._last_diag)
+                report["steps"].append(entry)
+                report["ok"] = False
+                report["failed_at"] = name
+                raise
+
+        try:
+            step("dashboard/CheckToken")
+            step("dashboard/CheckBackgroundToken")
+            step("dashboard/InitDashboard")
+            report["ok"] = True
+        except WebtopApiError:
+            pass
+        return report
+
+    def establish_session(self) -> None:
+        """Require a fully usable session — not CheckToken alone."""
+        if not self.token:
+            raise WebtopApiError(
+                "חסר webToken",
+                category=ErrorCategory.MISSING_TOKEN,
+            )
+        data = self.post("dashboard/CheckToken", {})
+        self._require_check_flag("dashboard/CheckToken", data)
+        bg = self.post("dashboard/CheckBackgroundToken", {})
+        self._apply_token_update(bg, source="dashboard/CheckBackgroundToken")
+        self._require_check_flag("dashboard/CheckBackgroundToken", bg)
+        dash = self.post("dashboard/InitDashboard", {})
+        if not isinstance(dash, dict):
+            raise WebtopApiError(
+                "InitDashboard unexpected schema",
+                category=ErrorCategory.UNEXPECTED_RESPONSE,
+                endpoint="dashboard/InitDashboard",
+                diagnostics=self._last_diag,
+            )
+        kids = dash.get("childrens") or dash.get("children") or []
+        if isinstance(kids, list) and kids:
+            self.child = kids[0]
+        print(
+            "AUTH session OK "
+            "CheckToken=true CheckBackgroundToken=true InitDashboard=ok "
+            f"jar_count={len(list(self._jar))}",
+            flush=True,
+        )
 
     def renew_via_bio(self) -> bool:
         """Mint a fresh webToken from bioLogin when available — not used for CloudFront 403."""
@@ -785,13 +1002,24 @@ class WebtopApi:
             )
             return False
         self.token = normalize_token(token)
+        self._token_source = "bio"
+        self._seed_web_token_cookie()
         self.tokens.save_verified(self.token)
-        ok = self.check_token()
-        print(f"AUTH token_renewal succeeded={ok}", flush=True)
-        return ok
+        try:
+            self.establish_session()
+            print("AUTH token_renewal succeeded=True", flush=True)
+            return True
+        except WebtopApiError as exc:
+            print(
+                f"AUTH token_renewal succeeded=False category={exc.category.value}",
+                flush=True,
+            )
+            self._last_auth_error = str(exc)
+            self._last_category = exc.category
+            return False
 
     def ensure_auth(self) -> None:
-        """Validate token; renew via bio only for confirmed auth/expiry failures — never for edge 403 HTML."""
+        """Full session auth; renew via bio only for auth/expiry failures — never for edge 403 HTML."""
         self._last_auth_error = ""
         self._last_category = None
         has_token = bool(self.token)
@@ -800,56 +1028,20 @@ class WebtopApi:
         print(
             f"AUTH start corr={self.correlation_id} has_token={has_token} "
             f"token_len={len(self.token)} has_bio={has_bio} cloud={ON_CLOUD} "
-            f"token_source={self._token_source}",
+            f"token_source={self._token_source} jar_count={len(list(self._jar))}",
             flush=True,
         )
-        if self.check_token():
-            try:
-                self.post("dashboard/CheckBackgroundToken", {})
-            except WebtopApiError as exc:
-                if exc.category == ErrorCategory.EXTERNAL_ACCESS_REJECTED:
-                    raise
-            return
-
-        category = self._last_category or ErrorCategory.UNKNOWN
-        if category == ErrorCategory.EXTERNAL_ACCESS_REJECTED:
-            raise WebtopApiError(
-                WebtopApiError("", category=category).user_message(),
-                category=category,
-                status=self._last_diag.get("status"),
-                endpoint="dashboard/CheckToken",
-                diagnostics=self._last_diag,
-            )
-
-        # Only probe dashboard for flaky auth responses — not for edge HTML rejection.
-        if category not in (
-            ErrorCategory.AUTHENTICATION_REQUIRED,
-            ErrorCategory.INVALID_TOKEN,
-            ErrorCategory.CONFIRMED_EXPIRED_TOKEN,
-            ErrorCategory.MISSING_TOKEN,
-            ErrorCategory.UNEXPECTED_RESPONSE,
-            ErrorCategory.UNKNOWN,
-        ):
-            raise WebtopApiError(
-                self._last_auth_error or WebtopApiError("", category=category).user_message(),
-                category=category,
-                status=self._last_diag.get("status"),
-                endpoint="dashboard/CheckToken",
-                diagnostics=self._last_diag,
-            )
-
         try:
-            self.init_dashboard()
-            print("AUTH CheckToken failed but InitDashboard OK — continuing", flush=True)
+            self.establish_session()
             return
         except WebtopApiError as exc:
+            self._last_auth_error = str(exc)
+            self._last_category = exc.category
             if exc.category == ErrorCategory.EXTERNAL_ACCESS_REJECTED:
                 raise
-            self._last_auth_error = self._last_auth_error or str(exc)
-            self._last_category = exc.category
 
-        # Renew only when bio exists and failure looks like auth/expiry — not edge rejection.
-        renewable = self._last_category in (
+        category = self._last_category or ErrorCategory.UNKNOWN
+        renewable = category in (
             ErrorCategory.AUTHENTICATION_REQUIRED,
             ErrorCategory.INVALID_TOKEN,
             ErrorCategory.CONFIRMED_EXPIRED_TOKEN,
@@ -861,20 +1053,23 @@ class WebtopApi:
             if self.renew_via_bio():
                 return
         elif renewable and not has_bio:
-            print("AUTH bio renew skipped reason=no_bio", flush=True)
+            print(
+                "AUTH bio renew skipped reason=no_bio — run רענון-טוקן.bat for a fresh session",
+                flush=True,
+            )
 
         if not has_token and not has_bio:
             raise WebtopApiError(
                 "חסר WEBTOP_TOKEN (או WEBTOP_BIO_JSON).",
                 category=ErrorCategory.MISSING_TOKEN,
             )
-        category = self._last_category or ErrorCategory.UNKNOWN
         raise WebtopApiError(
             WebtopApiError("", category=category).user_message()
-            + f" detail={self._last_auth_error or 'unknown'}",
+            + " יש לרענן טוקן מקומית (רענון-טוקן.bat). "
+            f"detail={self._last_auth_error or 'unknown'}",
             category=category,
             status=self._last_diag.get("status"),
-            endpoint="dashboard/CheckToken",
+            endpoint=self._last_diag.get("endpoint") or "dashboard/CheckToken",
             diagnostics=self._last_diag,
         )
 
